@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preload" as="image" href="landingPage1.webp">
+    <link rel="preload" as="image" href="landingPage2.webp">
+    <link rel="preload" as="image" href="landingPage3.webp">
+    <link rel="preload" as="image" href="landingPage4.webp">
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phortex Photo</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            font-family: 'Montserrat', sans-serif;
+            /* No initial opacity: 0 here */
+        }
+
+        /* NEW: This fixed dark layer provides the seamless background for the transition */
+        .transition-bg { 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1a; /* Matches home.html background */
+            z-index: 0; 
+        }
+
+        .hero {
+            height: 100vh;
+            width: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(0.5px);
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: white;
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            opacity: 0;
+            user-select: none;
+        }
+
+        /* ----- Border Morph Button Effect ----- */
+        .discover-btn {
+            margin-top: 20px;
+            padding: 14px 34px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            background: transparent;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            opacity: 0;
+        }
+
+        .discover-btn::before,
+        .discover-btn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: 2px solid white;
+            border-radius: 0;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        /* Outline draws itself on hover */
+        .discover-btn:hover::before {
+            inset: -4px;
+            opacity: 1;
+            border-radius: 12px;
+        }
+
+        .discover-btn:hover::after {
+            inset: 0;
+            opacity: 1;
+            border-radius: 0px;
+        }
+
+        .discover-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="transition-bg"></div> 
+
+    <div class="hero" id="hero">
+        <div class="overlay"></div>
+
+        <div class="content">
+            <h1 class="title">Phortex Photo</h1>
+            <a href="home.html" id="discover-link">
+                <button class="discover-btn">Discover Now</button>
+            </a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
