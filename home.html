@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phortex Photo - Home (Final Smooth Scroll)</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@300;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* BASE STYLES & DARK THEME */
+        :root {
+            --dark-bg: #1a1a1a;
+            --light-text: #f0f0f0;
+            --primary-color: #007bff;
+            --header-bg: rgba(34, 34, 34, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ---------------------------------------------------- */
+        /* LENIS INTEGRATION: Hide native scroll and let Lenis manage the scrollable viewport */
+        /* ---------------------------------------------------- */
+        html.lenis {
+            height: auto;
+        }
+
+        .lenis.lenis-smooth {
+            scroll-behavior: auto;
+        }
+
+        .lenis.lenis-smooth [data-lenis-prevent] {
+            overscroll-behavior: contain;
+        }
+
+        .lenis.lenis-stopped {
+            overflow: hidden;
+        }
+
+        .lenis.lenis-scrolling iframe {
+            pointer-events: none;
+        }
+        
+        /* Force hidden scrollbar for custom scroll (Lenis) across all browsers */
+        html {
+            overflow: hidden; /* Hide the main scrollbar container */
+        }
+
+        /* Hide scrollbar visually for WebKit browsers (Chrome, Safari) on both html and body */
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+        
+        /* Hide scrollbar for IE, Edge and Firefox on body */
+        body {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        /* ---------------------------------------------------- */
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            /* Ensure text can be read over the video */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); 
+            position: relative;
+        }
+
+
+        /* 1. VIDEO STYLES - FIXED POSITION */
+        .video-background {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -2;
+            transform: translate(-50%, -50%);
+            overflow: hidden;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 26, 0.4);
+            z-index: -1;
+        }
+
+        /* HEADER STYLES (Fixed) */
+        header {
+            background-color: var(--header-bg);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .logo a {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--light-text);
+            text-decoration: none;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+
+        nav ul li a {
+            color: var(--light-text);
+            text-decoration: none;
+            font-weight: 300;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: var(--primary-color);
+        }
+
+        /* ---------------------------------------------------- */
+        /* SCROLL PROGRESS BAR STYLES */
+        /* ---------------------------------------------------- */
+        .scroll-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px; /* Thickness of the bar */
+            background-color: #333; /* Background track color */
+        }
+
+        .scroll-progress-bar {
+            height: 100%;
+            width: 0%; /* Initial width, controlled by GSAP */
+            background-color: var(--primary-color); /* Bright color for visibility */
+            transition: background-color 0.3s ease;
+        }
+        /* ---------------------------------------------------- */
+
+
+        /* SECTION STYLES for Full-Screen Scrolling */
+        .page-section {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 100px 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        #home-section {
+            padding-top: 150px;
+        }
+
+        /* Opaque background for sections that need to cover the fixed video */
+        #filler-section, #another-filler-section {
+            background-color: var(--dark-bg);
+        }
+
+        /* ---------------------------------------------------- */
+        /* FINAL TEXT STYLE: Bigger and Creative Boldness (Anton) */
+        /* ---------------------------------------------------- */
+        .flickering-text-container {
+            font-size: 10rem; /* MAXIMAL SIZE */
+            font-family: 'Anton', sans-serif; 
+            font-weight: 400; /* Anton is inherently heavy (400) */
+            margin-bottom: 20px;
+            color: #fff; 
+            text-transform: uppercase; 
+            user-select: none;
+        }
+        /* ---------------------------------------------------- */
+
+        /* Style for the split-up letters */
+        .flickering-text-container span {
+            display: inline-block;
+            opacity: 0; /* Hidden by default, controlled by GSAP */
+        }
+
+        /* Standard content styles */
+        h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--light-text);
+        }
+
+        p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            max-width: 800px;
+        }
+
+        footer {
+            min-height: 100px;
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <video class="video-background" autoplay muted loop>
+        <source src="videos\KartWebOptimised.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="video-overlay"></div>
+
+    <header>
+        <div class="logo">
+            <a href="index.html">Phortex Photo</a>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="#home-section">Home</a></li>
+                <li><a href="#filler-section">Gallery</a></li>
+                <li><a href="#another-filler-section">About</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+        <div class="scroll-progress-container">
+            <div class="scroll-progress-bar"></div>
+        </div>
+    </header>
+
+    <div>
+        <section class="page-section" id="home-section">
+            <div class="flickering-text-container">
+                WELCOME
+            </div>
+        </section>
+
+        <section class="page-section" id="filler-section">
+            <h2>Our Latest Work</h2>
+            <p>This is the start of the next section. The fixed video background is now covered by this section's opaque dark background.</p>
+            <p style="font-size: 0.9rem; color: #aaa;">(Filler content placeholder)</p>
+        </section>
+
+        <section class="page-section" id="another-filler-section">
+            <h2>About Phortex</h2>
+            <p>This third section demonstrates the smooth page navigation.</p>
+            <p>Lenis provides the buttery smooth momentum without any forced snapping.</p>
+            <p style="font-size: 0.9rem; color: #aaa;">(Filler content placeholder)</p>
+        </section>
+    </div>
+
+    <footer>
+        <p style="text-align: center; padding: 20px; color: #777; position: relative;">&copy; 2024 Phortex Photo. All Rights Reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ------------------------------------------------------------
+    // --- 1. LENIS INITIALIZATION (Smooth Momentum) ---
+    // ------------------------------------------------------------
+    
+    const lenis = new Lenis({
+        duration: 1.5, 
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
+        direction: 'vertical',
+        gestureDirection: 'vertical', 
+        smoothWheel: true,
+        smoothTouch: false, 
+        autoRaf: true, 
+    })
+
+    function raf(time) {
+        lenis.raf(time)
+        requestAnimationFrame(raf)
+    }
+    requestAnimationFrame(raf)
+    
+    // *** LENIS-SCROLLTRIGGER BRIDGE ***
+    // This connects Lenis's scroll position updates to ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update)
+
+    gsap.ticker.add((time)=>{
+        lenis.raf(time * 1000)
+    })
+    
+    ScrollTrigger.defaults({
+        scroller: document.body 
+    });
+
+
+    document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            lenis.scrollTo(this.getAttribute('href'), {
+                duration: 1.2,
+                easing: (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t)
+            });
+        });
+    });
+
+
+    // ------------------------------------------------------------
+    // --- 2. GSAP Animations (Header and Dynamic Flicker) ---
+    // ------------------------------------------------------------
+    
+    // --- HEADER VISIBILITY LOGIC ---
+    // 1. Set initial state: hidden above the top and invisible
+    gsap.set("header", { y: "-100%", autoAlpha: 0 });
+
+    // 2. Create ScrollTrigger to reveal header the moment the user scrolls down 1 pixel
+    ScrollTrigger.create({
+        trigger: document.body,
+        start: "top top-=1", // Triggers the animation 1 pixel after the top of the page is reached
+        end: "max", // Keep the trigger active until the very end of the page scroll
+        
+        animation: gsap.to("header", {
+            y: "0%",
+            autoAlpha: 1,
+            duration: 0.5,
+            ease: "power2.out"
+        }),
+        // Play when scrolling down past the trigger, Reverse when scrolling up past the trigger
+        toggleActions: "play none none reverse" 
+    });
+    
+    
+    // Title Split and Header Animation
+    const titleContainer = document.querySelector(".flickering-text-container");
+    const titleText = titleContainer.textContent.trim();
+    let splitText = '';
+    
+    for (let i = 0; i < titleText.length; i++) {
+        const char = titleText[i];
+        const className = char === ' ' ? 'whitespace' : 'letter';
+        splitText += `<span class="${className}">${char}</span>`;
+    }
+    titleContainer.innerHTML = splitText;
+
+    // Simple Flicker-In Animation 
+    const letters = titleContainer.querySelectorAll(".letter");
+
+    // --- Dynamic Flicker Logic (Monochromatic, Longer Duration) ---
+    
+    // 1. Initial State: Set letters to be fully transparent, default color/shadow
+    gsap.set(letters, { opacity: 0, textShadow: 'none', color: '#fff' });
+
+    const flickerTimeline = gsap.timeline({
+        delay: 0.5,
+        onComplete: () => {
+            // Ensure final state is 100% visible, white, and has the intended dark shadow
+            gsap.to(letters, { 
+                opacity: 1, 
+                textShadow: '1px 1px 3px rgba(0, 0, 0, 0.7)', 
+                color: '#fff', 
+                duration: 0.3, 
+                ease: "power2.out" 
+            });
+        }
+    });
+
+    // 2. Define the Flicker Animation Logic
+    const numFlickerCycles = 10; 
+    const finalAppearanceTime = 1.0; 
+
+    for (let i = 0; i < numFlickerCycles; i++) {
+        const timePosition = `start+=${(i / numFlickerCycles) * finalAppearanceTime}`;
+
+        flickerTimeline.to(letters, {
+            opacity: 0, 
+            duration: () => gsap.utils.random(0.01, 0.03), 
+            stagger: { each: 0.02, from: "random" }
+        }, timePosition);
+
+        flickerTimeline.to(letters, {
+            opacity: 1, 
+            textShadow: () => `0 0 ${gsap.utils.random(1, 3)}px #fff`, 
+            duration: () => gsap.utils.random(0.02, 0.05), 
+            stagger: { each: 0.02, from: "random" }
+        }, `<-0.01`); 
+    }
+    
+    flickerTimeline.to(letters, {
+        opacity: 1,
+        textShadow: 'none',
+        duration: 0.1
+    }, '+=0.05'); 
+
+    // --- SCROLL PROGRESS BAR LOGIC ---
+    ScrollTrigger.create({
+        trigger: document.body,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.5,
+        onUpdate: (self) => {
+            gsap.to(".scroll-progress-bar", {
+                width: self.progress * 100 + "%",
+                ease: "none",
+                duration: 0.05 // Tiny duration for smooth update
+            });
+        }
+    });
+
+</script>
+</body>
+</html>
