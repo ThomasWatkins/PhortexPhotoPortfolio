@@ -22,73 +22,48 @@
             box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%;
+        }
+
         /* ---------------------------------------------------- */
-        /* LENIS INTEGRATION: Hide native scroll and let Lenis manage the scrollable viewport */
+        /* LENIS: do not globally hide scrollbars — we'll only
+           initialize Lenis on desktop. Native scroll on mobile. */
         /* ---------------------------------------------------- */
-        html.lenis {
-            height: auto;
-        }
+        /* Do not force overflow: hidden globally (bad for mobile) */
 
-        .lenis.lenis-smooth {
-            scroll-behavior: auto;
+        /* Hide scrollbar visually for WebKit on body only when needed */
+        .hide-native-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
-
-        .lenis.lenis-smooth [data-lenis-prevent] {
-            overscroll-behavior: contain;
-        }
-
-        .lenis.lenis-stopped {
-            overflow: hidden;
-        }
-
-        .lenis.lenis-scrolling iframe {
-            pointer-events: none;
-        }
-        
-        /* Force hidden scrollbar for custom scroll (Lenis) across all browsers */
-        html {
-            overflow: hidden; /* Hide the main scrollbar container */
-        }
-
-        /* Hide scrollbar visually for WebKit browsers (Chrome, Safari) on both html and body */
-        html::-webkit-scrollbar,
-        body::-webkit-scrollbar {
+        .hide-native-scrollbar::-webkit-scrollbar {
             display: none;
             width: 0;
             height: 0;
         }
-        
-        /* Hide scrollbar for IE, Edge and Firefox on body */
-        body {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-        
-        /* ---------------------------------------------------- */
 
         body {
             background-color: var(--dark-bg);
             color: var(--light-text);
             font-family: 'Montserrat', sans-serif;
             min-height: 100vh;
-            /* Ensure text can be read over the video */
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); 
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
             position: relative;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            scroll-behavior: smooth; /* fallback for mobile when Lenis not used */
         }
 
-
-        /* 1. VIDEO STYLES - FIXED POSITION */
+        /* 1. VIDEO STYLES - COVER USING object-fit (better for responsive) */
         .video-background {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover; /* important for responsive covers */
             z-index: -2;
-            transform: translate(-50%, -50%);
-            overflow: hidden;
         }
 
         .video-overlay {
@@ -101,10 +76,10 @@
             z-index: -1;
         }
 
-        /* HEADER STYLES (Fixed) */
+        /* HEADER STYLES */
         header {
             background-color: var(--header-bg);
-            padding: 15px 40px;
+            padding: 12px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -117,16 +92,22 @@
         }
 
         .logo a {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--light-text);
             text-decoration: none;
         }
 
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
         nav ul {
             list-style: none;
             display: flex;
-            gap: 30px;
+            gap: 24px;
         }
 
         nav ul li a {
@@ -134,34 +115,43 @@
             text-decoration: none;
             font-weight: 300;
             transition: color 0.3s ease;
+            font-size: 0.95rem;
         }
 
         nav ul li a:hover {
             color: var(--primary-color);
         }
 
+        /* Simple mobile menu button (hidden on desktop) */
+        .menu-toggle {
+            display: none;
+            background: transparent;
+            border: 0;
+            color: var(--light-text);
+            font-size: 1.4rem;
+            padding: 6px;
+            cursor: pointer;
+        }
+
         /* ---------------------------------------------------- */
-        /* SCROLL PROGRESS BAR STYLES */
-        /* ---------------------------------------------------- */
+        /* SCROLL PROGRESS BAR STYLES (kept small & inside header on mobile) */
         .scroll-progress-container {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 3px; /* Thickness of the bar */
-            background-color: #333; /* Background track color */
+            height: 3px;
+            background-color: #333;
         }
 
         .scroll-progress-bar {
             height: 100%;
-            width: 0%; /* Initial width, controlled by GSAP */
-            background-color: var(--primary-color); /* Bright color for visibility */
+            width: 0%;
+            background-color: var(--primary-color);
             transition: background-color 0.3s ease;
         }
         /* ---------------------------------------------------- */
 
-
-        /* SECTION STYLES for Full-Screen Scrolling */
         .page-section {
             min-height: 100vh;
             width: 100%;
@@ -179,34 +169,30 @@
             padding-top: 150px;
         }
 
-        /* Opaque background for sections that need to cover the fixed video */
         #filler-section, #another-filler-section {
             background-color: var(--dark-bg);
         }
 
-        /* ---------------------------------------------------- */
-        /* FINAL TEXT STYLE: Bigger and Creative Boldness (Anton) */
-        /* ---------------------------------------------------- */
+        /* Responsive headline: clamp so it fits on phones */
         .flickering-text-container {
-            font-size: 10rem; /* MAXIMAL SIZE */
-            font-family: 'Anton', sans-serif; 
-            font-weight: 400; /* Anton is inherently heavy (400) */
+            font-family: 'Anton', sans-serif;
+            font-weight: 400;
             margin-bottom: 20px;
-            color: #fff; 
-            text-transform: uppercase; 
+            color: #fff;
+            text-transform: uppercase;
             user-select: none;
+            /* Responsive font size */
+            font-size: clamp(3rem, 18vw, 10rem);
+            line-height: 0.9;
         }
-        /* ---------------------------------------------------- */
 
-        /* Style for the split-up letters */
         .flickering-text-container span {
             display: inline-block;
-            opacity: 0; /* Hidden by default, controlled by GSAP */
+            opacity: 0;
         }
 
-        /* Standard content styles */
         h2 {
-            font-size: 3rem;
+            font-size: clamp(1.6rem, 3.5vw, 3rem);
             margin-bottom: 20px;
             color: var(--light-text);
         }
@@ -214,7 +200,7 @@
         p {
             line-height: 1.8;
             margin-bottom: 15px;
-            font-size: 1.1rem;
+            font-size: clamp(0.95rem, 1.9vw, 1.1rem);
             max-width: 800px;
         }
 
@@ -223,17 +209,79 @@
             position: relative;
             z-index: 1;
         }
+
+        /* ----------------- MOBILE / SMALL SCREEN ADJUSTMENTS ----------------- */
+        @media (max-width: 900px) {
+            header {
+                padding: 10px 16px;
+            }
+
+            nav ul {
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            /* Stack nav items into a simple dropdown controlled by menu-toggle */
+            .menu-toggle {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            nav ul {
+                position: absolute;
+                top: 60px;
+                right: 16px;
+                background: rgba(20,20,20,0.95);
+                padding: 12px;
+                flex-direction: column;
+                gap: 10px;
+                border-radius: 6px;
+                display: none; /* toggled via .open on header */
+                min-width: 140px;
+            }
+
+            header.open nav ul {
+                display: flex;
+            }
+
+            .flickering-text-container {
+                /* reduce letter spacing and shadow on phones */
+                text-shadow: none;
+                letter-spacing: 0;
+            }
+
+            .video-overlay {
+                background: rgba(26, 26, 26, 0.55); /* slightly darker overlay on small screens */
+            }
+
+            .page-section {
+                padding: 110px 20px;
+            }
+        }
+
+        /* If the video is hidden on touch devices we can show a fallback background */
+        .no-video-body {
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
     </style>
 </head>
 <body>
-    <video class="video-background" autoplay muted loop>
-        <source src="videos\KartWebOptimised.mp4" type="video/mp4">
+
+    <!-- Video: note forward slashes in src & playsinline. Use a poster image as fallback.
+         For mobile we will hide the video via JS (to avoid autoplay/bandwidth) and set a poster background. -->
+    <video id="bg-video" class="video-background" autoplay muted loop playsinline poster="assets/KartPoster.jpg">
+        <source src="videos/KartWebOptimised.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
     <div class="video-overlay"></div>
 
-    <header>
+    <header id="site-header">
         <div class="logo">
             <a href="index.html">Phortex Photo</a>
         </div>
@@ -246,7 +294,10 @@
                 <li><a href="#">Contact</a></li>
             </ul>
         </nav>
-        <div class="scroll-progress-container">
+
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">☰</button>
+
+        <div class="scroll-progress-container" aria-hidden="true">
             <div class="scroll-progress-bar"></div>
         </div>
     </header>
@@ -283,137 +334,82 @@
 <script>
     gsap.registerPlugin(ScrollTrigger);
 
-    // ------------------------------------------------------------
-    // --- 1. LENIS INITIALIZATION (Smooth Momentum) ---
-    // ------------------------------------------------------------
-    
-    const lenis = new Lenis({
-        duration: 1.5, 
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
-        direction: 'vertical',
-        gestureDirection: 'vertical', 
-        smoothWheel: true,
-        smoothTouch: false, 
-        autoRaf: true, 
-    })
+    // Basic mobile/touch detection
+    const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer:coarse)').matches;
 
-    function raf(time) {
-        lenis.raf(time)
-        requestAnimationFrame(raf)
-    }
-    requestAnimationFrame(raf)
-    
-    // *** LENIS-SCROLLTRIGGER BRIDGE ***
-    // This connects Lenis's scroll position updates to ScrollTrigger
-    lenis.on('scroll', ScrollTrigger.update)
-
-    gsap.ticker.add((time)=>{
-        lenis.raf(time * 1000)
-    })
-    
-    ScrollTrigger.defaults({
-        scroller: document.body 
+    // Simple mobile menu toggle
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+        document.getElementById('site-header').classList.toggle('open');
     });
 
-
+    // Fix nav link clicks (smooth scroll) — will work with Lenis if initialized, otherwise native behavior
     document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            lenis.scrollTo(this.getAttribute('href'), {
-                duration: 1.2,
-                easing: (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t)
-            });
+            const target = document.querySelector(this.getAttribute('href'));
+            if (!target) return;
+
+            // If Lenis is available and initialized, use it. Otherwise fallback to native smooth scroll.
+            if (window.lenisInstance) {
+                lenisInstance.scrollTo(this.getAttribute('href'), {
+                    duration: 1.2,
+                    easing: (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t)
+                });
+            } else {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Close mobile menu after navigation
+            document.getElementById('site-header').classList.remove('open');
         });
     });
 
-
-    // ------------------------------------------------------------
-    // --- 2. GSAP Animations (Header and Dynamic Flicker) ---
-    // ------------------------------------------------------------
-    
-    // --- HEADER VISIBILITY LOGIC ---
-    // 1. Set initial state: hidden above the top and invisible
-    gsap.set("header", { y: "-100%", autoAlpha: 0 });
-
-    // 2. Create ScrollTrigger to reveal header the moment the user scrolls down 1 pixel
-    ScrollTrigger.create({
-        trigger: document.body,
-        start: "top top-=1", // Triggers the animation 1 pixel after the top of the page is reached
-        end: "max", // Keep the trigger active until the very end of the page scroll
-        
-        animation: gsap.to("header", {
-            y: "0%",
-            autoAlpha: 1,
-            duration: 0.5,
-            ease: "power2.out"
-        }),
-        // Play when scrolling down past the trigger, Reverse when scrolling up past the trigger
-        toggleActions: "play none none reverse" 
-    });
-    
-    
-    // Title Split and Header Animation
+    // Title split for flicker effect (same logic as before)
     const titleContainer = document.querySelector(".flickering-text-container");
     const titleText = titleContainer.textContent.trim();
     let splitText = '';
-    
+
     for (let i = 0; i < titleText.length; i++) {
         const char = titleText[i];
         const className = char === ' ' ? 'whitespace' : 'letter';
         splitText += `<span class="${className}">${char}</span>`;
     }
     titleContainer.innerHTML = splitText;
-
-    // Simple Flicker-In Animation 
     const letters = titleContainer.querySelectorAll(".letter");
-
-    // --- Dynamic Flicker Logic (Monochromatic, Longer Duration) ---
-    
-    // 1. Initial State: Set letters to be fully transparent, default color/shadow
     gsap.set(letters, { opacity: 0, textShadow: 'none', color: '#fff' });
 
-    const flickerTimeline = gsap.timeline({
-        delay: 0.5,
-        onComplete: () => {
-            // Ensure final state is 100% visible, white, and has the intended dark shadow
-            gsap.to(letters, { 
-                opacity: 1, 
-                textShadow: '1px 1px 3px rgba(0, 0, 0, 0.7)', 
-                color: '#fff', 
-                duration: 0.3, 
-                ease: "power2.out" 
-            });
+    // Flicker timeline: shorten/disable on small devices for performance and readability
+    const flickerTimeline = gsap.timeline({ delay: 0.5 });
+    if (!isTouch) {
+        // More dramatic flicker on desktop
+        const numFlickerCycles = 10;
+        const finalAppearanceTime = 1.0;
+        for (let i = 0; i < numFlickerCycles; i++) {
+            const timePosition = `start+=${(i / numFlickerCycles) * finalAppearanceTime}`;
+            flickerTimeline.to(letters, {
+                opacity: 0,
+                duration: () => gsap.utils.random(0.01, 0.03),
+                stagger: { each: 0.02, from: "random" }
+            }, timePosition);
+
+            flickerTimeline.to(letters, {
+                opacity: 1,
+                textShadow: () => `0 0 ${gsap.utils.random(1, 3)}px #fff`,
+                duration: () => gsap.utils.random(0.02, 0.05),
+                stagger: { each: 0.02, from: "random" }
+            }, `<-0.01`);
         }
-    });
-
-    // 2. Define the Flicker Animation Logic
-    const numFlickerCycles = 10; 
-    const finalAppearanceTime = 1.0; 
-
-    for (let i = 0; i < numFlickerCycles; i++) {
-        const timePosition = `start+=${(i / numFlickerCycles) * finalAppearanceTime}`;
-
         flickerTimeline.to(letters, {
-            opacity: 0, 
-            duration: () => gsap.utils.random(0.01, 0.03), 
-            stagger: { each: 0.02, from: "random" }
-        }, timePosition);
-
-        flickerTimeline.to(letters, {
-            opacity: 1, 
-            textShadow: () => `0 0 ${gsap.utils.random(1, 3)}px #fff`, 
-            duration: () => gsap.utils.random(0.02, 0.05), 
-            stagger: { each: 0.02, from: "random" }
-        }, `<-0.01`); 
+            opacity: 1,
+            textShadow: 'none',
+            duration: 0.1
+        }, '+=0.05');
+    } else {
+        // Simple fade-in on touch devices
+        flickerTimeline.to(letters, { opacity: 1, duration: 0.8, stagger: 0.03 });
     }
-    
-    flickerTimeline.to(letters, {
-        opacity: 1,
-        textShadow: 'none',
-        duration: 0.1
-    }, '+=0.05'); 
 
-    // --- SCROLL PROGRESS BAR LOGIC ---
+    // Scroll progress bar (works for both native and Lenis)
     ScrollTrigger.create({
         trigger: document.body,
         start: "top top",
@@ -423,8 +419,79 @@
             gsap.to(".scroll-progress-bar", {
                 width: self.progress * 100 + "%",
                 ease: "none",
-                duration: 0.05 // Tiny duration for smooth update
+                duration: 0.05
             });
+        }
+    });
+
+    // Header reveal logic (same as before)
+    gsap.set("header", { y: "-100%", autoAlpha: 0 });
+    ScrollTrigger.create({
+        trigger: document.body,
+        start: "top top-=1",
+        end: "max",
+        animation: gsap.to("header", {
+            y: "0%",
+            autoAlpha: 1,
+            duration: 0.5,
+            ease: "power2.out"
+        }),
+        toggleActions: "play none none reverse"
+    });
+
+    // LENIS: initialize only on non-touch / desktop devices to avoid mobile issues
+    if (!isTouch && typeof Lenis !== 'undefined') {
+        const lenis = new Lenis({
+            duration: 1.5,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smoothWheel: true,
+            smoothTouch: false,
+            autoRaf: true,
+        });
+        // expose to global for usage in nav handler
+        window.lenisInstance = lenis;
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // Lenis <-> ScrollTrigger bridge
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => {
+            lenis.raf(time * 1000);
+        });
+
+        ScrollTrigger.defaults({
+            scroller: document.body
+        });
+    } else {
+        // ON TOUCH DEVICES: hide video and use poster/background to save data & battery
+        const video = document.getElementById('bg-video');
+        if (video) {
+            try {
+                video.pause();
+                video.removeAttribute('src');
+                // some browsers require load() to release the video
+                video.load();
+            } catch (e) {
+                console.warn('Could not unload background video:', e);
+            }
+        }
+        // add a CSS background fallback class to the body and set a poster background in CSS inline
+        document.body.classList.add('no-video-body');
+        // Change background to poster image — adjust path to your poster
+        document.body.style.backgroundImage = "url('assets/KartPoster.jpg')";
+    }
+
+    // Accessibility note: close mobile nav when focus moves away
+    document.addEventListener('click', (e) => {
+        const header = document.getElementById('site-header');
+        if (!header.contains(e.target)) {
+            header.classList.remove('open');
         }
     });
 
