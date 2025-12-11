@@ -1,138 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="preload" as="image" href="landingPage1.webp">
-    <link rel="preload" as="image" href="landingPage2.webp">
-    <link rel="preload" as="image" href="landingPage3.webp">
-    <link rel="preload" as="image" href="landingPage4.webp">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phortex Photo - Home (External Files)</title>
 
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Phortex Photo</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body, html {
-            height: 100%;
-            width: 100%;
-            overflow-x: hidden;
-            font-family: 'Montserrat', sans-serif;
-            /* No initial opacity: 0 here */
-        }
-
-        /* NEW: This fixed dark layer provides the seamless background for the transition */
-        .transition-bg { 
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #1a1a1a; /* Matches home.html background */
-            z-index: 0; 
-        }
-
-        .hero {
-            height: 100vh;
-            width: 100%;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1;
-        }
-
-        .overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(0.5px);
-            z-index: 1;
-        }
-
-        .content {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            color: white;
-        }
-
-        .title {
-            font-size: 4rem;
-            font-weight: 700;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            opacity: 0;
-            user-select: none;
-        }
-
-        /* ----- Border Morph Button Effect ----- */
-        .discover-btn {
-            margin-top: 20px;
-            padding: 14px 34px;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            background: transparent;
-            color: white;
-            position: relative;
-            overflow: hidden;
-            border: none;
-            opacity: 0;
-        }
-
-        .discover-btn::before,
-        .discover-btn::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border: 2px solid white;
-            border-radius: 0;
-            opacity: 0;
-            transition: all 0.5s ease;
-        }
-
-        /* Outline draws itself on hover */
-        .discover-btn:hover::before {
-            inset: -4px;
-            opacity: 1;
-            border-radius: 12px;
-        }
-
-        .discover-btn:hover::after {
-            inset: 0;
-            opacity: 1;
-            border-radius: 0px;
-        }
-
-        .discover-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@300;700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css"> 
 </head>
-
 <body>
-    <div class="transition-bg"></div> 
+    <video class="video-background" autoplay muted loop>
+        <source src="videos\KartWebOptimised.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
 
-    <div class="hero" id="hero">
-        <div class="overlay"></div>
+    <div class="video-overlay"></div>
 
-        <div class="content">
-            <h1 class="title">Phortex Photo</h1>
-            <a href="home.html" id="discover-link">
-                <button class="discover-btn">Discover Now</button>
-            </a>
+    <header>
+        <div class="logo">
+            <a href="index.html">Phortex Photo</a>
         </div>
+
+        <nav>
+            <ul>
+                <li><a href="#home-section">Home</a></li>
+                <li><a href="#pin-container">Pin Demo</a></li>
+                <li><a href="#filler-section">Gallery</a></li>
+                <li><a href="#another-filler-section">About</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+        <div class="scroll-progress-container">
+            <div class="scroll-progress-bar"></div>
+        </div>
+    </header>
+
+    <div>
+        <section class="page-section" id="home-section">
+            <div class="flickering-text-container" id="welcome-text">
+                WELCOME
+            </div>
+            
+            <div class="scroll-to-explore-center" id="scroll-to-explore">
+                scroll to explore
+            </div>
+            
+            <div class="welcome-aux-text bottom-right">
+                Phortex Media Creation
+            </div>
+        </section>
+
+        <section class="page-section" id="pin-container" style="background-color: var(--dark-bg);">
+            <div id="sticky-element" style="padding: 20px; border: 2px solid var(--primary-color); background-color: rgba(0, 123, 255, 0.1); width: 80%; max-width: 600px; text-align: center;">
+                <h2>✨ **I Am Sticky!** ✨</h2>
+                <p>I will stay pinned to the top of the viewport for 200vh of scrolling.</p>
+            </div>
+            <p style="margin-top: 100vh; font-size: 0.9rem; color: #aaa;">Scroll down a lot to activate the pin and then to unpin it.</p>
+            <p style="margin-top: 100vh; font-size: 0.9rem; color: #aaa;">(More filler content...)</p>
+        </section>
+
+        <section class="page-section" id="filler-section">
+            <h2>Our Latest Work</h2>
+            <p>This is the start of the next section. The fixed video background is now covered by this section's opaque dark background.</p>
+            <p style="font-size: 0.9rem; color: #aaa;">(Filler content placeholder)</p>
+        </section>
+
+        <section class="page-section" id="another-filler-section">
+            <h2>About Phortex</h2>
+            <p>This third section demonstrates the smooth page navigation.</p>
+            <p>Lenis provides the buttery smooth momentum without any forced snapping.</p>
+            <p style="font-size: 0.9rem; color: #aaa;">(Filler content placeholder)</p>
+        </section>
     </div>
 
-    <script src="script.js"></script>
+    <footer>
+        <p style="text-align: center; padding: 20px; color: #777; position: relative;">&copy; 2024 Phortex Photo. All Rights Reserved.</p>
+    </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.34/dist/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <script src="scriptMain.js"></script>
 </body>
 </html>
