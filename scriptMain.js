@@ -163,7 +163,7 @@ ScrollTrigger.create({
     // Start pinning when the top of the pinContainer hits the top of the viewport
     start: "top top", 
     // End pinning after 200vh of scrolling past the start (Corrected from 1200vh)
-    end: "+=200vh", 
+    end: "+=1000vh", 
     pin: stickyElement, // The element to make sticky
     pinSpacing: false, // Prevents adding padding to the scroller
     
@@ -209,4 +209,5 @@ gsap.to(scrollCue, {
         end: "bottom top",
         scrub: 1,
     }
+
 });
