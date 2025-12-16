@@ -10,6 +10,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* outline: 1px solid red; */
 }
 
 /* ---------------------------------------------------- */
@@ -173,6 +174,14 @@ nav ul li a:hover {
 #filler-section, #another-filler-section, #pin-container {
     background-color: var(--dark-bg);
 }
+#pin-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    padding-top: 25vh;
+    gap: 6vw;
+}
+
 
 /* ---------------------------------------------------- */
 /* FINAL TEXT STYLE: Bigger and Creative Boldness (Anton) */
