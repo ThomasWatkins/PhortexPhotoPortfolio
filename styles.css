@@ -1,0 +1,250 @@
+/* BASE STYLES & DARK THEME */
+:root {
+    --dark-bg: #1a1a1a;
+    --light-text: #f0f0f0;
+    --primary-color: #007bff;
+    --header-bg: rgba(34, 34, 34, 0.8);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ---------------------------------------------------- */
+/* LENIS INTEGRATION: Hide native scroll and let Lenis manage the scrollable viewport */
+/* ---------------------------------------------------- */
+html.lenis {
+    height: auto;
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+    pointer-events: none;
+}
+
+/* Force hidden scrollbar for custom scroll (Lenis) across all browsers */
+html {
+    overflow: hidden; /* Hide the main scrollbar container */
+}
+
+/* Hide scrollbar visually for WebKit browsers (Chrome, Safari) on both html and body */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox on body */
+body {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* ---------------------------------------------------- */
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--light-text);
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    /* Ensure text can be read over the video */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); 
+    position: relative;
+}
+
+
+/* 1. VIDEO STYLES - FIXED POSITION */
+.video-background {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -2;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+}
+
+.video-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 26, 26, 0.4);
+    z-index: -1;
+}
+
+/* HEADER STYLES (Fixed) */
+header {
+    background-color: var(--header-bg);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+.logo a {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--light-text);
+    text-decoration: none;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+}
+
+nav ul li a {
+    color: var(--light-text);
+    text-decoration: none;
+    font-weight: 300;
+    transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+    color: var(--primary-color);
+}
+
+/* ---------------------------------------------------- */
+/* SCROLL PROGRESS BAR STYLES */
+/* ---------------------------------------------------- */
+.scroll-progress-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px; /* Thickness of the bar */
+    background-color: #333; /* Background track color */
+}
+
+.scroll-progress-bar {
+    height: 100%;
+    width: 0%; /* Initial width, controlled by GSAP */
+    background-color: var(--primary-color); /* Bright color for visibility */
+    transition: background-color 0.3s ease;
+}
+/* ---------------------------------------------------- */
+
+
+/* SECTION STYLES for Full-Screen Scrolling */
+.page-section {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 100px 40px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+#home-section {
+    padding-top: 150px;
+}
+
+/* Opaque background for sections that need to cover the fixed video */
+#filler-section, #another-filler-section, #pin-container {
+    background-color: var(--dark-bg);
+}
+
+/* ---------------------------------------------------- */
+/* FINAL TEXT STYLE: Bigger and Creative Boldness (Anton) */
+/* ---------------------------------------------------- */
+.flickering-text-container {
+    font-size: 10rem; /* MAXIMAL SIZE */
+    font-family: 'Anton', sans-serif; 
+    font-weight: 400; /* Anton is inherently heavy (400) */
+    /* Increased margin to create vertical space between WELCOME and scroll cue */
+    margin-bottom: 100px; 
+    color: #fff; 
+    text-transform: uppercase; 
+    user-select: none;
+}
+/* ---------------------------------------------------- */
+
+/* Style for the split-up letters */
+.flickering-text-container span {
+    display: inline-block;
+    opacity: 0; /* Hidden by default, controlled by GSAP */
+}
+
+/* Standard content styles */
+h2 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: var(--light-text);
+}
+
+p {
+    line-height: 1.8;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    max-width: 800px;
+}
+
+footer {
+    min-height: 100px;
+    position: relative;
+    z-index: 1;
+}
+/* ---------------------------------------------------- */
+/* HOME SECTION AUXILIARY TEXT STYLES (Bottom Corners and Centered Cue) */
+/* ---------------------------------------------------- */
+
+.welcome-aux-text {
+    /* Base styles for bottom corner text (Phortex Media Creation) */
+    position: absolute; /* Keeps it locked to the corner */
+    bottom: 50px; 
+    font-size: 0.9rem;
+    color: rgba(240, 240, 240, 0.7); 
+    font-family: 'Montserrat', sans-serif;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.welcome-aux-text.bottom-right {
+    right: 40px; /* Aligned with main padding */
+}
+
+/* Centered 'scroll to explore' text (This is the fix) */
+.scroll-to-explore-center {
+    
+    /* Style overrides */
+    font-size: 1.2rem; 
+    font-weight: 300; /* Thinner font weight */
+    color: rgba(240, 240, 240, 0.9);
+    font-family: 'Montserrat', sans-serif; /* Ensures the correct font is used */
+    text-shadow: none;
+    letter-spacing: 5px;
+    margin-top: -80px; 
+    z-index: 20; 
+    user-select: none;
+}
