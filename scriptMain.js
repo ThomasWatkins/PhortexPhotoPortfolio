@@ -163,18 +163,9 @@ ScrollTrigger.create({
     // Start pinning when the top of the pinContainer hits the top of the viewport
     start: "top top", 
     // End pinning after 200vh of scrolling past the start (Corrected from 1200vh)
-    end: "+=1000vh", 
+    end: "+=850vh", 
     pin: stickyElement, // The element to make sticky
     pinSpacing: false, // Prevents adding padding to the scroller
-    
-    // Optional: Use scrub to smoothly transition a color while it's pinned
-    scrub: true,
-    animation: gsap.to(stickyElement, { 
-        backgroundColor: "rgba(255, 165, 0, 0.4)", // Orange hue
-        borderColor: "#ffa500", 
-        scale: 1.05, 
-        duration: 1
-    })
 });
 
 // ------------------------------------------------------------
@@ -209,5 +200,4 @@ gsap.to(scrollCue, {
         end: "bottom top",
         scrub: 1,
     }
-
 });
