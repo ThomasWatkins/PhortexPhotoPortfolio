@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phortex Photo Media</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="photos/nikko%20circuit/nikko1.webp" fetchpriority="high" type="image/webp">
+  <template id="__bundler_thumbnail">
+    <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+      <rect width="120" height="80" fill="#070708"/>
+      <rect x="12" y="12" width="96" height="56" fill="#0e0c16" rx="2"/>
+      <text x="60" y="44" font-family="sans-serif" font-size="14" font-weight="bold" fill="#9333ea" text-anchor="middle" letter-spacing="2">PXM</text>
+    </svg>
+  </template>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; cursor:none !important; }
+    :root {
+      --accent: #9333ea;
+      --accent-dim: rgba(147,51,234,0.18);
+      --accent-glow: rgba(147,51,234,0.45);
+      --bg: #070708;
+      --surface: #0a0810;
+      --text: #e0e0e0;
+      --muted: #464650;
+      --wire: rgba(255,255,255,0.07);
+      --mono: 'Space Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; }
+    body::after {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:9000;
+      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.035) 3px, rgba(0,0,0,0.035) 4px);
+    }
+
+    /* ── Cursor ── */
+    #cursor-dot {
+      position:fixed; width:11px; height:11px; border-radius:50%;
+      background:var(--accent); pointer-events:none; z-index:9999;
+      transform:translate(-50%,-50%);
+      box-shadow:0 0 10px var(--accent), 0 0 28px var(--accent-glow);
+      mix-blend-mode:screen; transition:width .15s, height .15s, box-shadow .15s;
+    }
+    #cursor-dot.expand { width:22px; height:22px; box-shadow:0 0 16px var(--accent), 0 0 40px var(--accent-glow); }
+    #cursor-ring {
+      position:fixed; width:38px; height:38px; border-radius:50%;
+      border:1px solid rgba(147,51,234,0.35); pointer-events:none; z-index:9998;
+      transform:translate(-50%,-50%); transition:width .3s, height .3s, border-color .3s;
+    }
+    #cursor-ring.expand { width:54px; height:54px; border-color:rgba(147,51,234,0.6); }
+    #trail-canvas { position:fixed; inset:0; pointer-events:none; z-index:9997; }
+
+    /* ── Nav ── */
+    .nav {
+      position:fixed; top:0; left:0; right:0; z-index:300;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:22px 52px; transition:background .4s, border-color .4s;
+    }
+    .nav.scrolled { background:rgba(7,7,8,0.9); backdrop-filter:blur(20px); border-bottom:1px solid var(--wire); }
+    .nav-logo { font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.2em; color:#fff; text-transform:uppercase; }
+    .nav-logo-dim { font-weight:400; color:rgba(255,255,255,0.3); }
+    .nav-links { display:flex; gap:40px; }
+    .nav-link { font-family:var(--mono); font-size:10px; letter-spacing:0.16em; color:rgba(255,255,255,0.38); text-transform:uppercase; text-decoration:none; transition:color .2s; }
+    .nav-link:hover { color:#fff; }
+
+    /* ── Photo Slot ── */
+    .photo-slot {
+      display:block; position:relative; overflow:hidden; width:100%; height:100%;
+      background:repeating-linear-gradient(-45deg, #0f0f12 0, #0f0f12 9px, #131316 9px, #131316 18px);
+    }
+    .photo-slot img {
+      position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block;
+      opacity:0; filter:blur(22px); transform:scale(1.08);
+      transition:opacity .5s ease, filter .7s ease, transform .7s ease;
+    }
+    .photo-slot.loaded img { opacity:1; filter:blur(0); transform:scale(1); }
+
+    /* ── Natural-height mode (masonry modal) ── */
+    .photo-slot.natural { height:auto; min-height:80px; }
+    .photo-slot.natural img {
+      position:relative; inset:unset; width:100%; height:auto;
+      object-fit:unset; transform:none;
+    }
+    .photo-slot.natural.loaded img { transform:none; }
+    .slot-empty {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:7px; pointer-events:none;
+    }
+    .slot-empty-icon { font-size:22px; opacity:0.15; }
+    .slot-empty-lbl { font-family:var(--mono); font-size:9px; letter-spacing:0.14em; color:rgba(255,255,255,0.1); text-transform:uppercase; }
+    .photo-slot.filled .slot-empty { display:none; }
+
+    /* ── Loader reticle ── */
+    @keyframes reticleSpin { to { stroke-dashoffset: -100; } }
+    @keyframes reticlePulse { 0%,100%{opacity:0.25} 50%{opacity:1} }
+    @keyframes reticleFadeOut { to { opacity:0; pointer-events:none; } }
+    .slot-loader {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      pointer-events:none; transition:opacity .4s;
+    }
+    .slot-loader.done { opacity:0; }
+    .loader-svg { width:46px; height:46px; overflow:visible; }
+    .l-spin { animation:reticleSpin 2s linear infinite; transform-origin:20px 20px; }
+    .l-pulse { animation:reticlePulse 2s ease-in-out infinite; }
+
+    /* ── Hero ── */
+    .hero { height:100vh; position:relative; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden; }
+    .hero-bg { position:absolute; inset:0; }
+    .hero-overlay {
+      position:absolute; inset:0; pointer-events:none; z-index:1;
+      background:linear-gradient(105deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.12) 100%),
+                 linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 45%);
+    }
+    .hero-crumb {
+      position:absolute; top:82px; left:52px; z-index:2;
+      font-family:var(--mono); font-size:9px; letter-spacing:0.24em;
+      color:rgba(255,255,255,0.2); text-transform:uppercase;
+    }
+    .hero-crumb span { color:var(--accent); opacity:0.5; margin:0 8px; }
+    .hero-content { position:relative; z-index:2; padding:0 52px 76px; }
+    .hero-title {
+      font-family:var(--display); font-size:clamp(84px,13.5vw,200px);
+      line-height:0.88; text-transform:uppercase; letter-spacing:0.01em;
+    }
+    .t-white { color:#fff; display:block; }
+    .t-accent { color:var(--accent); display:block; }
+    .hero-tag { display:flex; align-items:center; gap:14px; margin-top:26px; }
+    .hero-tag-line { width:32px; height:1px; background:var(--accent); opacity:0.6; flex-shrink:0; }
+    .hero-tag-text { font-family:var(--mono); font-size:9px; letter-spacing:0.28em; color:rgba(255,255,255,0.32); text-transform:uppercase; }
+    .hero-ticker {
+      position:absolute; bottom:0; left:0; right:0; z-index:3;
+      border-top:1px solid rgba(255,255,255,0.07);
+      background:rgba(0,0,0,0.6); backdrop-filter:blur(14px);
+      overflow:hidden; padding:11px 0;
+    }
+    .ticker-track { display:flex; white-space:nowrap; animation:tickerRoll 30s linear infinite; }
+    @keyframes tickerRoll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    .ticker-word { font-family:var(--mono); font-size:9px; letter-spacing:0.22em; color:rgba(255,255,255,0.28); text-transform:uppercase; padding-right:20px; }
+    .ticker-dot { display:inline-block; width:3px; height:3px; border-radius:50%; background:var(--accent); opacity:0.5; margin-right:20px; vertical-align:middle; position:relative; top:-1px; }
+
+    /* ── Section Header ── */
+    .s-hd { display:flex; align-items:center; gap:20px; padding:72px 52px 32px; }
+    .s-label { font-family:var(--mono); font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
+    .s-rule { flex:1; height:1px; background:var(--wire); }
+    .s-sup { font-family:var(--mono); font-size:9px; letter-spacing:0.12em; color:var(--accent); opacity:0.45; white-space:nowrap; }
+
+    /* ── Featured Mosaic ── */
+    .feat-grid {
+      padding:0 52px;
+      display:grid;
+      grid-template-columns:1.5fr 1fr 1fr;
+      grid-template-rows:285px 285px;
+      gap:5px;
+    }
+    .fg { position:relative; overflow:hidden; }
+    .fg.tall { grid-row:span 2; }
+    .fg.wide { grid-column:span 2; }
+    .fg .photo-slot { transition:filter .4s, transform .5s cubic-bezier(0.16,1,0.3,1); transform-origin:center; }
+    .fg:hover .photo-slot { filter:brightness(1.08); transform:scale(1.03); }
+
+    /* ── Video Showcase ── */
+    .video-grid { padding:0 52px; display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+    .v-slot {
+      height:420px; position:relative; overflow:hidden;
+      background:repeating-linear-gradient(-45deg,#0e0c16 0,#0e0c16 9px,#11101a 9px,#11101a 18px);
+      transition:filter .3s; user-select:none;
+    }
+    .v-slot video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .v-slot:not(.v-playing):hover { filter:brightness(1.1); }
+    .v-inner {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:14px;
+      transition:opacity .4s; background:rgba(0,0,0,0.25);
+      pointer-events:none;
+    }
+    .v-inner.v-controls-active { pointer-events:auto; }
+    .v-play-btn {
+      width:64px; height:64px; border-radius:50%;
+      border:1px solid rgba(147,51,234,0.3); background:rgba(147,51,234,0.07);
+      display:flex; align-items:center; justify-content:center;
+      transition:border-color .3s, background .3s;
+    }
+    .v-controls-active .v-play-btn { border-color:rgba(147,51,234,0.6); background:rgba(147,51,234,0.15); }
+    .v-play-icon { width:0; height:0; border-top:11px solid transparent; border-bottom:11px solid transparent; border-left:18px solid rgba(147,51,234,0.7); margin-left:5px; }
+    .v-pause-icon { width:14px; height:18px; border-left:4px solid rgba(147,51,234,0.7); border-right:4px solid rgba(147,51,234,0.7); }
+    .v-name { font-family:var(--mono); font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:rgba(255,255,255,0.3); }
+    .v-dur { font-family:var(--mono); font-size:9px; color:rgba(147,51,234,0.45); }
+    .v-fullscreen-btn {
+      position:absolute; top:14px; right:14px; z-index:2;
+      width:32px; height:32px; border-radius:4px;
+      border:1px solid rgba(147,51,234,0.25); background:rgba(0,0,0,0.55);
+      backdrop-filter:blur(6px);
+      display:flex; align-items:center; justify-content:center;
+      transition:opacity .25s, border-color .25s;
+    }
+    .v-fullscreen-btn:hover { border-color:rgba(147,51,234,0.7); }
+
+    /* ── Collections ── */
+    .coll-grid { padding:0 52px; columns:4; gap:5px; }
+    .c-card {
+      break-inside:avoid; margin-bottom:5px; position:relative; overflow:hidden;
+      border:1px solid transparent;
+      transition:border-color .3s, transform .4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .c-card:hover { border-color:rgba(147,51,234,0.3); transform:translateY(-3px); }
+    .c-card:hover .c-overlay { opacity:1; }
+    .c-card:hover .c-arr { opacity:1; transform:translate(0,0); }
+    .c-card:hover .photo-slot { filter:brightness(0.85); }
+    .c-card .photo-slot { transition:filter .3s; }
+    .c-overlay {
+      position:absolute; inset:0; opacity:0; transition:opacity .35s;
+      background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.25) 55%, transparent 100%);
+      display:flex; flex-direction:column; justify-content:flex-end; padding:16px 14px;
+    }
+    .c-title { font-family:var(--mono); font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:#fff; }
+    .c-ct { font-family:var(--mono); font-size:9px; color:var(--accent); margin-top:5px; letter-spacing:0.08em; opacity:0.8; }
+    .c-arr {
+      position:absolute; top:12px; right:12px; font-size:14px; color:var(--accent);
+      opacity:0; transition:opacity .3s, transform .3s; transform:translate(5px,-5px);
+    }
+
+    /* ── About ── */
+    .about-sec {
+      padding:100px 52px; background:var(--surface);
+      border-top:1px solid var(--wire); border-bottom:1px solid var(--wire);
+      display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start;
+    }
+    .about-eyebrow { font-family:var(--mono); font-size:9px; letter-spacing:0.24em; text-transform:uppercase; color:var(--accent); opacity:0.65; margin-bottom:18px; }
+    .about-heading { font-family:var(--display); font-size:clamp(52px,5.5vw,88px); line-height:0.88; text-transform:uppercase; color:#fff; margin-bottom:28px; }
+    .about-bio { font-family:var(--mono); font-size:11px; line-height:2; color:rgba(255,255,255,0.4); }
+    .about-bio p { margin-bottom:18px; }
+    .about-photo { height:380px; position:relative; margin-bottom:24px; }
+    .about-stats { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:32px; }
+    .stat { border-top:1px solid var(--wire); padding-top:18px; }
+    .stat-n { font-family:var(--display); font-size:52px; line-height:1; color:var(--accent); }
+    .stat-l { font-family:var(--mono); font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+
+    /* ── Footer ── */
+    .footer {
+      padding:44px 52px; border-top:1px solid var(--wire);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .footer-logo { font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); }
+    .footer-links { display:flex; gap:32px; }
+    .footer-link { font-family:var(--mono); font-size:9px; letter-spacing:0.14em; color:var(--muted); text-decoration:none; transition:color .2s; }
+    .footer-link:hover { color:#fff; }
+
+    /* ── Collection Modal ── */
+    .coll-modal {
+      position:fixed; inset:0; z-index:600; overflow-y:auto;
+      background:rgba(4,3,8,0.98); backdrop-filter:blur(28px);
+      opacity:0; pointer-events:none; transition:opacity .4s;
+    }
+    .coll-modal.open { opacity:1; pointer-events:all; }
+    .cm-hd {
+      position:sticky; top:0; z-index:10;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:22px 52px; background:rgba(4,3,8,0.96);
+      border-bottom:1px solid var(--wire); backdrop-filter:blur(20px);
+    }
+    .cm-title { font-family:var(--display); font-size:30px; text-transform:uppercase; letter-spacing:0.04em; }
+    .cm-sub { font-family:var(--mono); font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-top:4px; }
+    .cm-close {
+      font-family:var(--mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase;
+      color:var(--muted); padding:10px 22px; border:1px solid var(--wire); background:transparent;
+      transition:all .25s;
+    }
+    .cm-close:hover { color:var(--accent); border-color:rgba(147,51,234,0.4); }
+    .cm-body { padding:40px 52px 80px; }
+    .cm-grid { columns:3; gap:5px; }
+    .cm-item {
+      break-inside:avoid; margin-bottom:5px; overflow:hidden; position:relative;
+      border:1px solid transparent; transition:border-color .25s, transform .25s;
+    }
+    .cm-item:hover { border-color:rgba(147,51,234,0.3); transform:scale(1.005); }
+
+    /* ── Lightbox ── */
+    .lb {
+      position:fixed; inset:0; z-index:700; background:rgba(0,0,0,0.96);
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .3s;
+    }
+    .lb.open { opacity:1; pointer-events:all; }
+    .lb-wrap { position:relative; display:flex; align-items:center; justify-content:center; }
+    .lb-wrap img { max-width:88vw; max-height:86vh; object-fit:contain; display:block; }
+    .lb-empty {
+      width:min(840px,88vw); height:min(580px,80vh);
+      background:repeating-linear-gradient(-45deg,#111 0,#111 9px,#151518 9px,#151518 18px);
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    }
+    .lb-empty-icon { font-size:24px; opacity:0.12; }
+    .lb-empty-lbl { font-family:var(--mono); font-size:9px; letter-spacing:0.16em; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+    .lb-btn {
+      position:absolute; top:50%; transform:translateY(-50%);
+      width:50px; height:50px; border-radius:50%; border:1px solid rgba(255,255,255,0.12);
+      background:rgba(0,0,0,0.6); backdrop-filter:blur(8px);
+      display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.5);
+      font-size:16px; transition:all .2s;
+    }
+    .lb-btn:hover { border-color:var(--accent); color:#fff; box-shadow:0 0 16px var(--accent-glow); }
+    .lb-prev { left:calc(-50px - 24px); }
+    .lb-next { right:calc(-50px - 24px); }
+    .lb-ui-top { position:fixed; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:20px 36px; }
+    .lb-counter { font-family:var(--mono); font-size:10px; letter-spacing:0.18em; color:rgba(255,255,255,0.3); }
+    .lb-counter em { color:#fff; font-style:normal; }
+    .lb-close-btn {
+      font-family:var(--mono); font-size:10px; letter-spacing:0.14em; text-transform:uppercase;
+      color:rgba(255,255,255,0.35); padding:9px 18px; border:1px solid rgba(255,255,255,0.1);
+      background:transparent; transition:all .2s;
+    }
+    .lb-close-btn:hover { color:#fff; border-color:rgba(255,255,255,0.3); }
+    .lb-caption { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); font-family:var(--mono); font-size:9px; letter-spacing:0.2em; color:rgba(255,255,255,0.25); text-transform:uppercase; white-space:nowrap; }
+
+    /* ── Util ── */
+    button { appearance:none; border:none; background:transparent; color:inherit; font:inherit; }
+  </style>
+</head>
+<body>
+  <canvas id="trail-canvas"></canvas>
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    // ─── TWEAKS PANEL (inlined) ───────────────────────────────────────────────
+    const __TWEAKS_STYLE = `
+      .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;background:rgba(250,249,247,.78);color:#29261b;-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border:.5px solid rgba(255,255,255,.6);border-radius:14px;box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+      .twk-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 8px 10px 14px;cursor:move;user-select:none}
+      .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+      .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+      .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+      .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden;min-height:0}
+      .twk-row{display:flex;flex-direction:column;gap:5px}
+      .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+      .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;color:rgba(41,38,27,.72)}
+      .twk-lbl>span:first-child{font-weight:500}
+      .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+      .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(41,38,27,.45);padding:10px 0 0}
+      .twk-sect:first-child{padding-top:0}
+      .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+      .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+      .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+      .twk-toggle[data-on="1"]{background:#34c759}
+      .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+      .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+      .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;background:transparent;flex-shrink:0}
+      .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+      .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+      .twk-row{display:flex;flex-direction:column;gap:5px}
+    `;
+
+    function useTweaks(defaults) {
+      const [values, setValues] = React.useState(defaults);
+      const setTweak = React.useCallback((key, val) => {
+        setValues(prev => ({ ...prev, [key]: val }));
+        window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ [key]: val } }, '*');
+      }, []);
+      return [values, setTweak];
+    }
+
+    function TweaksPanel({ title='Tweaks', children }) {
+      const [open, setOpen] = React.useState(false);
+      const dragRef = React.useRef(null);
+      const offsetRef = React.useRef({ x:16, y:16 });
+      const clamp = React.useCallback(() => {
+        const p = dragRef.current; if (!p) return;
+        const maxR = Math.max(16, window.innerWidth - p.offsetWidth - 16);
+        const maxB = Math.max(16, window.innerHeight - p.offsetHeight - 16);
+        offsetRef.current = { x: Math.min(maxR, Math.max(16, offsetRef.current.x)), y: Math.min(maxB, Math.max(16, offsetRef.current.y)) };
+        p.style.right = offsetRef.current.x + 'px'; p.style.bottom = offsetRef.current.y + 'px';
+      }, []);
+      React.useEffect(() => {
+        const h = e => { const t = e?.data?.type; if (t==='__activate_edit_mode') setOpen(true); else if (t==='__deactivate_edit_mode') setOpen(false); };
+        window.addEventListener('message', h);
+        window.parent.postMessage({ type:'__edit_mode_available' }, '*');
+        return () => window.removeEventListener('message', h);
+      }, []);
+      const dismiss = () => { setOpen(false); window.parent.postMessage({ type:'__edit_mode_dismissed' }, '*'); };
+      const onDrag = e => {
+        const p = dragRef.current; if (!p) return;
+        const r = p.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
+        const sr = window.innerWidth - r.right, sb = window.innerHeight - r.bottom;
+        const mv = ev => { offsetRef.current = { x: sr-(ev.clientX-sx), y: sb-(ev.clientY-sy) }; clamp(); };
+        const up = () => { window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up); };
+        window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+      };
+      if (!open) return null;
+      return (<><style>{__TWEAKS_STYLE}</style><div ref={dragRef} className="twk-panel" style={{right:offsetRef.current.x,bottom:offsetRef.current.y}}><div className="twk-hd" onMouseDown={onDrag}><b>{title}</b><button className="twk-x" onMouseDown={e=>e.stopPropagation()} onClick={dismiss}>✕</button></div><div className="twk-body">{children}</div></div></>);
+    }
+
+    function TweakSection({ label }) { return <div className="twk-sect">{label}</div>; }
+    function TweakSlider({ label, value, min=0, max=100, step=1, unit='', onChange }) {
+      return (<div className="twk-row"><div className="twk-lbl"><span>{label}</span><span className="twk-val">{value}{unit}</span></div><input type="range" className="twk-slider" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></div>);
+    }
+    function TweakToggle({ label, value, onChange }) {
+      return (<div className="twk-row twk-row-h"><div className="twk-lbl"><span>{label}</span></div><button type="button" className="twk-toggle" data-on={value?'1':'0'} onClick={()=>onChange(!value)}><i/></button></div>);
+    }
+    function TweakColor({ label, value, onChange }) {
+      return (<div className="twk-row twk-row-h"><div className="twk-lbl"><span>{label}</span></div><input type="color" className="twk-swatch" value={value} onChange={e=>onChange(e.target.value)}/></div>);
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    // @@PHOTOS_START
+    const PHOTOS = {
+      // Hero
+      "hero": "photos/nikko%20circuit/nikko1.webp",
+
+      // Featured work mosaic
+      "feat-01": "photos/nikko%20circuit/nikko2.webp",
+      "feat-02": "photos/Daikoku/daikoku1.webp",
+      "feat-03": "photos/nikko%20circuit/nikko3.webp",
+      "feat-04": "photos/Daikoku/daikoku2.webp",
+      "feat-05": "photos/nikko%20circuit/nikko4.webp",
+
+      // Series covers
+      "cover-civic-rooftop": "photos/Civic%20Rooftop/civic2.webp",
+      "cover-daikoku": "photos/Daikoku/daikoku3.webp",
+      "cover-nikko-circuit": "photos/nikko%20circuit/nikko5.webp",
+
+      // About portrait
+      "about-portrait": "photos/Daikoku/daikoku13.webp",
+
+      // Civic Rooftop — 6 photos
+      "civic-rooftop-01": "photos/Civic%20Rooftop/civic1.webp",
+      "civic-rooftop-02": "photos/Civic%20Rooftop/civic2.webp",
+      "civic-rooftop-03": "photos/Civic%20Rooftop/civic3.webp",
+      "civic-rooftop-04": "photos/Civic%20Rooftop/civic5.webp",
+      "civic-rooftop-05": "photos/Civic%20Rooftop/civic6.webp",
+      "civic-rooftop-06": "photos/Civic%20Rooftop/civic7.webp",
+
+      // Daikoku — 13 photos
+      "daikoku-01": "photos/Daikoku/daikoku1.webp",
+      "daikoku-02": "photos/Daikoku/daikoku2.webp",
+      "daikoku-03": "photos/Daikoku/daikoku3.webp",
+      "daikoku-04": "photos/Daikoku/daikoku4.webp",
+      "daikoku-05": "photos/Daikoku/daikoku5.webp",
+      "daikoku-06": "photos/Daikoku/daikoku6.webp",
+      "daikoku-07": "photos/Daikoku/daikoku7.webp",
+      "daikoku-08": "photos/Daikoku/daikoku8.webp",
+      "daikoku-09": "photos/Daikoku/daikoku9.webp",
+      "daikoku-10": "photos/Daikoku/daikoku10.webp",
+      "daikoku-11": "photos/Daikoku/daikoku11.webp",
+      "daikoku-12": "photos/Daikoku/daikoku12.webp",
+      "daikoku-13": "photos/Daikoku/daikoku13.webp",
+
+      // nikko circuit — 13 photos
+      "nikko-circuit-01": "photos/nikko%20circuit/nikko1.webp",
+      "nikko-circuit-02": "photos/nikko%20circuit/nikko2.webp",
+      "nikko-circuit-03": "photos/nikko%20circuit/nikko3.webp",
+      "nikko-circuit-04": "photos/nikko%20circuit/nikko4.webp",
+      "nikko-circuit-05": "photos/nikko%20circuit/nikko5.webp",
+      "nikko-circuit-06": "photos/nikko%20circuit/nikko6.webp",
+      "nikko-circuit-07": "photos/nikko%20circuit/nikko7.webp",
+      "nikko-circuit-08": "photos/nikko%20circuit/nikko8.webp",
+      "nikko-circuit-09": "photos/nikko%20circuit/nikko9.webp",
+      "nikko-circuit-10": "photos/nikko%20circuit/nikko10.webp",
+      "nikko-circuit-11": "photos/nikko%20circuit/nikko11.webp",
+      "nikko-circuit-12": "photos/nikko%20circuit/nikko12.webp",
+      "nikko-circuit-13": "photos/nikko%20circuit/nikko13.webp",
+
+    };
+    // @@PHOTOS_END
+
+    // @@VIDEOS_START
+    const VIDEOS = [
+      { key:"video-01", title:"Go-karting at Newcastle Kart Club", duration:"0:13", src:"videos/Karting.mp4" },
+    ];
+    // @@VIDEOS_END
+
+    // @@SERIES_START
+    const SERIES = [
+      { id:1, slug:"civic-rooftop", title:"Honda Civic Rooftop", location:"Newcastle, NSW", year:2025, count:6, h:190 },
+      { id:2, slug:"daikoku", title:"Daikoku Parking Area", location:"Japan", year:2023, count:13, h:190 },
+      { id:3, slug:"nikko-circuit", title:"Nikko Circuit", location:"Japan", year:2026, count:13, h:265 },
+    ];
+    // @@SERIES_END
+
+    const TICKER_WORDS = ['Studio','Editorial','Dark','Speed','Automotive','Cinematic','Motion','Detail','Precision','Track','Studio','Editorial','Dark','Speed','Motion','Drift','Editorial','Precision'];
+
+    function seriesSlots(series) {
+      return Array.from({length: series.count}, (_, i) =>
+        `${series.slug}-${String(i+1).padStart(2,'0')}`
+      );
+    }
+
+    // ── Photo Slot Component ──────────────────────────────────────
+    function PhotoSlot({ slotKey, style, height, onClick, eager, natural }) {
+      const src = PHOTOS[slotKey] || "";
+      const filled = src !== "";
+      const ref = useRef(null);
+      const [visible,  setVisible]  = useState(!!eager);
+      const [loading,  setLoading]  = useState(false);
+      const [loaded,   setLoaded]   = useState(false);
+
+      // Lazy: only fetch image when slot scrolls near viewport (skipped for eager/hero)
+      useEffect(() => {
+        if (!filled || eager) return;
+        const el = ref.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(
+          ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
+          { rootMargin: '400px' }
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+      }, [filled, eager]);
+
+      useEffect(() => { if (visible && src) setLoading(true); }, [visible, src]);
+
+      return (
+        <div
+          ref={ref}
+          className={`photo-slot${filled?' filled':''}${loaded?' loaded':''}${natural?' natural':''}`}
+          style={{ ...(natural ? { minHeight: 80 } : { height: height || '100%' }), ...style }}
+          onClick={onClick}
+        >
+          {/* Actual image — only injected when in view */}
+          {visible && src && (
+            <img
+              src={src}
+              alt={slotKey}
+              decoding="async"
+              loading={eager ? 'eager' : 'lazy'}
+              fetchpriority={eager ? 'high' : 'auto'}
+              onLoad={() => setLoaded(true)}
+            />
+          )}
+
+          {/* Reticle loader — visible while loading, fades out on load */}
+          {loading && (
+            <div className={`slot-loader${loaded?' done':''}`}>
+              <svg className="loader-svg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                {/* Static outer ring */}
+                <circle cx="20" cy="20" r="15" fill="none" stroke="rgba(147,51,234,0.18)" strokeWidth="1"/>
+                {/* Spinning dashed arc */}
+                <circle cx="20" cy="20" r="15" fill="none" stroke="var(--accent)"
+                  strokeWidth="1" strokeDasharray="14 80"
+                  strokeDashoffset="0" className="l-spin"/>
+                {/* Crosshair ticks */}
+                <line x1="20" y1="2"  x2="20" y2="7"  stroke="var(--accent)" strokeWidth="0.8" opacity="0.45"/>
+                <line x1="20" y1="33" x2="20" y2="38" stroke="var(--accent)" strokeWidth="0.8" opacity="0.45"/>
+                <line x1="2"  y1="20" x2="7"  y2="20" stroke="var(--accent)" strokeWidth="0.8" opacity="0.45"/>
+                <line x1="33" y1="20" x2="38" y2="20" stroke="var(--accent)" strokeWidth="0.8" opacity="0.45"/>
+                {/* Corner brackets */}
+                <path d="M5 13 L5 5 L13 5"  fill="none" stroke="var(--accent)" strokeWidth="0.8" opacity="0.3"/>
+                <path d="M27 5 L35 5 L35 13" fill="none" stroke="var(--accent)" strokeWidth="0.8" opacity="0.3"/>
+                <path d="M35 27 L35 35 L27 35" fill="none" stroke="var(--accent)" strokeWidth="0.8" opacity="0.3"/>
+                <path d="M13 35 L5 35 L5 27"  fill="none" stroke="var(--accent)" strokeWidth="0.8" opacity="0.3"/>
+                {/* Pulsing centre dot */}
+                <circle cx="20" cy="20" r="1.8" fill="var(--accent)" className="l-pulse"/>
+              </svg>
+            </div>
+          )}
+
+          {/* Empty placeholder — only when no photo assigned */}
+          {!filled && (
+            <div className="slot-empty">
+              <div className="slot-empty-icon">⊹</div>
+              <div className="slot-empty-lbl">{slotKey}</div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ── Nav ──────────────────────────────────────────────────────
+    function Nav({ onNav }) {
+      const [scrolled, setScrolled] = useState(false);
+      useEffect(() => {
+        const h = () => setScrolled(window.scrollY > 40);
+        window.addEventListener('scroll', h, { passive:true });
+        return () => window.removeEventListener('scroll', h);
+      }, []);
+      return (
+        <nav className={`nav${scrolled?' scrolled':''}`} data-screen-label="Nav">
+          <div className="nav-logo">Phortex <span className="nav-logo-dim">Photo Media</span></div>
+          <div className="nav-links">
+            {[['Work','#work'],['Series','#series'],['About','#about'],['Contact','#contact']].map(([l,h]) => (
+              <a key={l} href={h} className="nav-link">{l}</a>
+            ))}
+          </div>
+        </nav>
+      );
+    }
+
+    // ── Hero ─────────────────────────────────────────────────────
+    function Hero() {
+      const ticker = [...TICKER_WORDS, ...TICKER_WORDS];
+      return (
+        <section className="hero" data-screen-label="01 Hero" id="work">
+          <div className="hero-bg"><PhotoSlot slotKey="hero" eager /></div>
+          <div className="hero-overlay"></div>
+          <div className="hero-crumb">Automotive<span>·</span>Motorsport<span>·</span>Editorial</div>
+          <div className="hero-content">
+            <div className="hero-title">
+              <span className="t-white">Phortex</span>
+              <span className="t-accent">Photo</span>
+              <span className="t-white">Media</span>
+            </div>
+            <div className="hero-tag">
+              <div className="hero-tag-line"></div>
+              <div className="hero-tag-text">Visual storytelling through light &amp; motion</div>
+            </div>
+          </div>
+          <div className="hero-ticker">
+            <div className="ticker-track">
+              {ticker.map((w,i) => (
+                <span key={i} className="ticker-word">{w}<span className="ticker-dot"></span></span>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // ── Featured Grid ─────────────────────────────────────────────
+    function FeaturedSection() {
+      return (
+        <div id="featured" data-screen-label="02 Featured Work">
+          <div className="s-hd">
+            <div className="s-label">Featured Work</div>
+            <div className="s-rule"></div>
+            <div className="s-sup">General</div>
+          </div>
+          <div className="feat-grid">
+            <div className="fg tall"><PhotoSlot slotKey="feat-01" /></div>
+            <div className="fg"><PhotoSlot slotKey="feat-02" /></div>
+            <div className="fg"><PhotoSlot slotKey="feat-03" /></div>
+            <div className="fg wide"><PhotoSlot slotKey="feat-04" /></div>
+            <div className="fg"><PhotoSlot slotKey="feat-05" /></div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Video Showcase ────────────────────────────────────────────
+    function VideoCard({ v }) {
+      const videoRef  = useRef(null);
+      const timerRef  = useRef(null);
+      const [playing,      setPlaying]      = useState(false);
+      const [showControls, setShowControls] = useState(true);
+
+      useEffect(() => () => clearTimeout(timerRef.current), []);
+
+      const startHideTimer = () => {
+        clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => setShowControls(false), 2500);
+      };
+
+      const toggle = () => {
+        const vid = videoRef.current;
+        if (!vid || !v.src) return;
+        if (playing) {
+          vid.pause();
+          setPlaying(false);
+          setShowControls(true);
+          clearTimeout(timerRef.current);
+        } else {
+          vid.play();
+          setPlaying(true);
+          startHideTimer();
+        }
+      };
+
+      const handleMouseMove = () => {
+        if (playing) { setShowControls(true); startHideTimer(); }
+      };
+
+      const handleMouseLeave = () => {
+        if (playing) { clearTimeout(timerRef.current); setShowControls(false); }
+      };
+
+      const goFullscreen = (e) => {
+        e.stopPropagation();
+        const vid = videoRef.current;
+        if (!vid) return;
+        (vid.requestFullscreen || vid.webkitRequestFullscreen || (() => {})).call(vid);
+      };
+
+      const overlayVisible = !playing || showControls;
+
+      return (
+        <div
+          className={`v-slot${playing ? ' v-playing' : ''}`}
+          onClick={toggle}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+        >
+          {v.src && (
+            <video
+              ref={videoRef}
+              src={v.src}
+              loop
+              playsInline
+              onEnded={() => { setPlaying(false); setShowControls(true); clearTimeout(timerRef.current); }}
+            />
+          )}
+          <div
+            className={`v-inner${overlayVisible ? ' v-controls-active' : ''}`}
+            style={{ opacity: overlayVisible ? 1 : 0 }}
+          >
+            <div className="v-play-btn">
+              {playing ? <div className="v-pause-icon" /> : <div className="v-play-icon" />}
+            </div>
+            <div className="v-name">{v.title}</div>
+            <div className="v-dur">{v.duration}</div>
+          </div>
+          {v.src && (
+            <button
+              className="v-fullscreen-btn"
+              style={{ opacity: overlayVisible ? 1 : 0 }}
+              onClick={goFullscreen}
+            >
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M1 4.5V1H4.5M8.5 1H12V4.5M12 8.5V12H8.5M4.5 12H1V8.5" stroke="rgba(147,51,234,0.85)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    function VideoSection() {
+      return (
+        <div data-screen-label="03 Video Showcase">
+          <div className="s-hd">
+            <div className="s-label">Video</div>
+            <div className="s-rule"></div>
+            <div className="s-sup">Showcase</div>
+          </div>
+          <div className="video-grid">
+            {VIDEOS.map(v => <VideoCard key={v.key} v={v} />)}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Collections Grid ──────────────────────────────────────────
+    function CollectionsSection({ onOpen }) {
+      return (
+        <section id="series" data-screen-label="04 Collections">
+          <div className="s-hd">
+            <div className="s-label">Series &amp; Collections</div>
+            <div className="s-rule"></div>
+            <div className="s-sup">08 collections</div>
+          </div>
+          <div className="coll-grid">
+            {SERIES.map(s => (
+              <div key={s.id} className="c-card" style={{height:s.h}} onClick={() => onOpen(s)}>
+                <PhotoSlot slotKey={`cover-${s.slug}`} height={s.h} />
+                <div className="c-overlay">
+                  <div className="c-title">{s.title}</div>
+                  <div className="c-ct">{s.location} · {s.year} · {s.count} photos</div>
+                </div>
+                <div className="c-arr">↗</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    // ── About ─────────────────────────────────────────────────────
+    function AboutSection() {
+      return (
+        <section className="about-sec" id="about" data-screen-label="05 About">
+          <div>
+            <div className="about-eyebrow">About the photographer</div>
+            <div className="about-heading">Behind the lens</div>
+            <div className="about-bio">
+              <p>Add your bio here — who you are, what drives you, and why you shoot. This is your chance to connect with the people viewing your work.</p>
+              <p>Phortex Photo Media specialises in automotive and motorsport photography across Australia, Japan, and South-East Asia.</p>
+            </div>
+            <div className="about-stats">
+              <div className="stat"><div className="stat-n">8</div><div className="stat-l">Series</div></div>
+              <div className="stat"><div className="stat-n">160+</div><div className="stat-l">Photos</div></div>
+              <div className="stat"><div className="stat-n">5</div><div className="stat-l">Countries</div></div>
+              <div className="stat"><div className="stat-n">2024</div><div className="stat-l">Active</div></div>
+            </div>
+          </div>
+          <div>
+            <div className="about-photo"><PhotoSlot slotKey="about-portrait" height={380} /></div>
+          </div>
+        </section>
+      );
+    }
+
+    // ── Collection Modal ──────────────────────────────────────────
+    function CollModal({ series, onClose, onOpenLightbox }) {
+      const slots = series ? seriesSlots(series) : [];
+      return (
+        <div className={`coll-modal${series?' open':''}`} data-screen-label="Collection Modal">
+          {series && (
+            <>
+              <div className="cm-hd">
+                <div>
+                  <div className="cm-title">{series.title}</div>
+                  <div className="cm-sub">{series.location} · {series.year} · {series.count} photos</div>
+                </div>
+                <button className="cm-close" onClick={onClose}>← Back</button>
+              </div>
+              <div className="cm-body">
+                <div className="cm-grid">
+                  {slots.map((key, i) => (
+                    <div key={key} className="cm-item" onClick={() => onOpenLightbox(slots, i)}>
+                      <PhotoSlot slotKey={key} natural />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    // ── Lightbox ──────────────────────────────────────────────────
+    function Lightbox({ photos, index, onClose, onPrev, onNext }) {
+      useEffect(() => {
+        if (index === null) return;
+        const handler = (e) => {
+          if (e.key === 'ArrowLeft')  onPrev();
+          if (e.key === 'ArrowRight') onNext();
+          if (e.key === 'Escape')     onClose();
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+      }, [index, onPrev, onNext, onClose]);
+
+      const open = index !== null && photos.length > 0;
+      const slotKey = open ? photos[index] : null;
+      const src = slotKey ? (PHOTOS[slotKey] || "") : "";
+
+      return (
+        <div className={`lb${open?' open':''}`} data-screen-label="Lightbox">
+          <div className="lb-ui-top">
+            <div className="lb-counter">
+              <em>{open ? index+1 : 0}</em> / {photos.length}
+            </div>
+            <button className="lb-close-btn" onClick={onClose}>Close ✕</button>
+          </div>
+          <div className="lb-wrap">
+            {src
+              ? <img src={src} alt={slotKey} />
+              : <div className="lb-empty">
+                  <div className="lb-empty-icon">⊹</div>
+                  <div className="lb-empty-lbl">{slotKey}</div>
+                </div>
+            }
+            <button className="lb-btn lb-prev" onClick={onPrev}>‹</button>
+            <button className="lb-btn lb-next" onClick={onNext}>›</button>
+          </div>
+          {slotKey && <div className="lb-caption">{slotKey}</div>}
+        </div>
+      );
+    }
+
+    // ── App ───────────────────────────────────────────────────────
+    function App() {
+      const [tweaks, setTweak] = useTweaks({
+        "accentColor": "#9333ea",
+        "cursorSize": 11,
+      });
+      const [activeSeries, setActiveSeries] = useState(null);
+      const [lbPhotos, setLbPhotos]   = useState([]);
+      const [lbIndex, setLbIndex]     = useState(null);
+
+      useEffect(() => {
+        document.documentElement.style.setProperty('--accent', tweaks.accentColor);
+        const bright = tweaks.accentColor;
+        document.documentElement.style.setProperty('--accent-bright', bright);
+        window.__accentHex = tweaks.accentColor;
+        const dot  = document.getElementById('cursor-dot');
+        const ring = document.getElementById('cursor-ring');
+        if (dot)  { dot.style.width  = tweaks.cursorSize+'px'; dot.style.height = tweaks.cursorSize+'px'; }
+        if (ring) { ring.style.width = (tweaks.cursorSize*3.4)+'px'; ring.style.height = (tweaks.cursorSize*3.4)+'px'; }
+      }, [tweaks.accentColor, tweaks.cursorSize]);
+
+      const openLightbox = (photos, idx) => { setLbPhotos(photos); setLbIndex(idx); };
+      const closeLightbox = () => setLbIndex(null);
+      const prevPhoto = () => setLbIndex(i => (i - 1 + lbPhotos.length) % lbPhotos.length);
+      const nextPhoto = () => setLbIndex(i => (i + 1) % lbPhotos.length);
+
+      return (
+        <>
+          <Nav />
+          <Hero />
+          <FeaturedSection />
+          <VideoSection />
+          <CollectionsSection onOpen={setActiveSeries} />
+          <AboutSection />
+          <footer className="footer" id="contact" data-screen-label="Footer">
+            <div className="footer-logo">Phortex Photo Media © 2025</div>
+            <div className="footer-links">
+              <a href="#" className="footer-link">Instagram</a>
+              <a href="#" className="footer-link">Contact</a>
+              <a href="#" className="footer-link">Licensing</a>
+            </div>
+          </footer>
+
+          <CollModal
+            series={activeSeries}
+            onClose={() => setActiveSeries(null)}
+            onOpenLightbox={openLightbox}
+          />
+          <Lightbox
+            photos={lbPhotos}
+            index={lbIndex}
+            onClose={closeLightbox}
+            onPrev={prevPhoto}
+            onNext={nextPhoto}
+          />
+
+          <TweaksPanel>
+            <TweakSection label="Accent Color" />
+            <TweakColor label="Color" value={tweaks.accentColor} onChange={v => setTweak('accentColor',v)} />
+            <TweakSection label="Cursor Size" />
+            <TweakSlider label="Size" value={tweaks.cursorSize} min={6} max={22} step={1} unit="px" onChange={v => setTweak('cursorSize',v)} />
+          </TweaksPanel>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+
+  <!-- Cursor + Trail -->
+  <script>
+    const dot  = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    const cv   = document.getElementById('trail-canvas');
+    const ctx  = cv.getContext('2d');
+    let mx=-200, my=-200, rx=-200, ry=-200, particles=[];
+    window.__accentHex = '#9333ea';
+
+    function hexToRgb(h) {
+      const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
+      return `${r},${g},${b}`;
+    }
+
+    function resize() { cv.width=window.innerWidth; cv.height=window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    dot.style.width='11px'; dot.style.height='11px';
+    ring.style.width='38px'; ring.style.height='38px';
+
+    document.addEventListener('mousemove', e => {
+      mx=e.clientX; my=e.clientY;
+      dot.style.left=mx+'px'; dot.style.top=my+'px';
+      for(let i=0;i<2;i++) particles.push({ x:mx+(Math.random()-.5)*6, y:my+(Math.random()-.5)*6, r:Math.random()*3+1.5, life:1 });
+    });
+
+    document.addEventListener('mouseover', e => {
+      const over = e.target.closest('a,button,.c-card,.cm-item,.fg,.v-slot,.lb-btn');
+      dot.classList.toggle('expand', !!over);
+      ring.classList.toggle('expand', !!over);
+    });
+
+    function loop() {
+      ctx.clearRect(0,0,cv.width,cv.height);
+      rx+=(mx-rx)*0.1; ry+=(my-ry)*0.1;
+      ring.style.left=rx+'px'; ring.style.top=ry+'px';
+      const rgb = hexToRgb(window.__accentHex || '#9333ea');
+      for(let i=particles.length-1;i>=0;i--) {
+        const p=particles[i]; p.life-=0.05;
+        if(p.life<=0){particles.splice(i,1);continue;}
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${rgb},${p.life*0.32})`;
+        ctx.shadowBlur=10; ctx.shadowColor=`rgb(${rgb})`; ctx.fill(); ctx.shadowBlur=0;
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>
