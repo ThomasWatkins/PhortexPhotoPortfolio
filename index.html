@@ -405,7 +405,7 @@
     // ─────────────────────────────────────────────────────────────────────────
     const { useState, useEffect, useRef, useCallback } = React;
 
-    // @@PHOTOS_START
+                            // @@PHOTOS_START
     const PHOTOS = {
       // Hero
       "hero": "photos/nikko%20circuit/nikko1.webp",
@@ -418,37 +418,16 @@
       "feat-05": "photos/nikko%20circuit/nikko4.webp",
 
       // Series covers
-      "cover-civic-rooftop": "photos/Civic%20Rooftop/civic2.webp",
-      "cover-daikoku": "photos/Daikoku/daikoku3.webp",
       "cover-nikko-circuit": "photos/nikko%20circuit/nikko5.webp",
+      "cover-daikoku": "photos/Daikoku/daikoku3.webp",
+      "cover-civic-rooftop": "photos/Civic%20Rooftop/civic2.webp",
+      "cover-kouk14": "photos/kouk14/kouk14.webp",
+      "cover-jirah31": "photos/Jirah31/cover.webp",
 
       // About portrait
       "about-portrait": "photos/Daikoku/daikoku13.webp",
 
-      // Civic Rooftop — 6 photos
-      "civic-rooftop-01": "photos/Civic%20Rooftop/civic1.webp",
-      "civic-rooftop-02": "photos/Civic%20Rooftop/civic2.webp",
-      "civic-rooftop-03": "photos/Civic%20Rooftop/civic3.webp",
-      "civic-rooftop-04": "photos/Civic%20Rooftop/civic5.webp",
-      "civic-rooftop-05": "photos/Civic%20Rooftop/civic6.webp",
-      "civic-rooftop-06": "photos/Civic%20Rooftop/civic7.webp",
-
-      // Daikoku — 13 photos
-      "daikoku-01": "photos/Daikoku/daikoku1.webp",
-      "daikoku-02": "photos/Daikoku/daikoku2.webp",
-      "daikoku-03": "photos/Daikoku/daikoku3.webp",
-      "daikoku-04": "photos/Daikoku/daikoku4.webp",
-      "daikoku-05": "photos/Daikoku/daikoku5.webp",
-      "daikoku-06": "photos/Daikoku/daikoku6.webp",
-      "daikoku-07": "photos/Daikoku/daikoku7.webp",
-      "daikoku-08": "photos/Daikoku/daikoku8.webp",
-      "daikoku-09": "photos/Daikoku/daikoku9.webp",
-      "daikoku-10": "photos/Daikoku/daikoku10.webp",
-      "daikoku-11": "photos/Daikoku/daikoku11.webp",
-      "daikoku-12": "photos/Daikoku/daikoku12.webp",
-      "daikoku-13": "photos/Daikoku/daikoku13.webp",
-
-      // nikko circuit — 13 photos
+      // Nikko Circuit — 13 photos
       "nikko-circuit-01": "photos/nikko%20circuit/nikko1.webp",
       "nikko-circuit-02": "photos/nikko%20circuit/nikko2.webp",
       "nikko-circuit-03": "photos/nikko%20circuit/nikko3.webp",
@@ -463,20 +442,87 @@
       "nikko-circuit-12": "photos/nikko%20circuit/nikko12.webp",
       "nikko-circuit-13": "photos/nikko%20circuit/nikko13.webp",
 
+      // Daikoku Parking Area — 13 photos
+      "daikoku-01": "photos/Daikoku/daikoku1.webp",
+      "daikoku-02": "photos/Daikoku/daikoku2.webp",
+      "daikoku-03": "photos/Daikoku/daikoku3.webp",
+      "daikoku-04": "photos/Daikoku/daikoku4.webp",
+      "daikoku-05": "photos/Daikoku/daikoku5.webp",
+      "daikoku-06": "photos/Daikoku/daikoku6.webp",
+      "daikoku-07": "photos/Daikoku/daikoku7.webp",
+      "daikoku-08": "photos/Daikoku/daikoku8.webp",
+      "daikoku-09": "photos/Daikoku/daikoku9.webp",
+      "daikoku-10": "photos/Daikoku/daikoku10.webp",
+      "daikoku-11": "photos/Daikoku/daikoku11.webp",
+      "daikoku-12": "photos/Daikoku/daikoku12.webp",
+      "daikoku-13": "photos/Daikoku/daikoku13.webp",
+
+      // Honda Civic Rooftop — 6 photos
+      "civic-rooftop-01": "photos/Civic%20Rooftop/civic1.webp",
+      "civic-rooftop-02": "photos/Civic%20Rooftop/civic2.webp",
+      "civic-rooftop-03": "photos/Civic%20Rooftop/civic3.webp",
+      "civic-rooftop-04": "photos/Civic%20Rooftop/civic5.webp",
+      "civic-rooftop-05": "photos/Civic%20Rooftop/civic6.webp",
+      "civic-rooftop-06": "photos/Civic%20Rooftop/civic7.webp",
+
+      // Kouk14 — 25 photos
+      "kouk14-01": "photos/kouk14/DSC00807-Enhanced-NR.webp",
+      "kouk14-02": "photos/kouk14/DSC00813-Enhanced-NR.webp",
+      "kouk14-03": "photos/kouk14/DSC00816.webp",
+      "kouk14-04": "photos/kouk14/DSC00817.webp",
+      "kouk14-05": "photos/kouk14/DSC00818.webp",
+      "kouk14-06": "photos/kouk14/DSC00820.webp",
+      "kouk14-07": "photos/kouk14/DSC00821.webp",
+      "kouk14-08": "photos/kouk14/DSC00823.webp",
+      "kouk14-09": "photos/kouk14/DSC00825.webp",
+      "kouk14-10": "photos/kouk14/DSC00826.webp",
+      "kouk14-11": "photos/kouk14/DSC00828.webp",
+      "kouk14-12": "photos/kouk14/DSC00831.webp",
+      "kouk14-13": "photos/kouk14/DSC00832.webp",
+      "kouk14-14": "photos/kouk14/DSC00835.webp",
+      "kouk14-15": "photos/kouk14/DSC00836.webp",
+      "kouk14-16": "photos/kouk14/DSC00837.webp",
+      "kouk14-17": "photos/kouk14/DSC00838.webp",
+      "kouk14-18": "photos/kouk14/DSC00844.webp",
+      "kouk14-19": "photos/kouk14/DSC00846.webp",
+      "kouk14-20": "photos/kouk14/DSC00848.webp",
+      "kouk14-21": "photos/kouk14/DSC00853.webp",
+      "kouk14-22": "photos/kouk14/DSC00854.webp",
+      "kouk14-23": "photos/kouk14/DSC00858.webp",
+      "kouk14-24": "photos/kouk14/DSC00859.webp",
+      "kouk14-25": "photos/kouk14/kouk14.webp",
+
+      // Jirah's R31 — 14 photos
+      "jirah31-01": "photos/Jirah31/cover.webp",
+      "jirah31-02": "photos/Jirah31/DSC00933-Enhanced-NR.webp",
+      "jirah31-03": "photos/Jirah31/DSC00935.webp",
+      "jirah31-04": "photos/Jirah31/DSC00947.webp",
+      "jirah31-05": "photos/Jirah31/DSC00955.webp",
+      "jirah31-06": "photos/Jirah31/DSC00970.webp",
+      "jirah31-07": "photos/Jirah31/DSC01000.webp",
+      "jirah31-08": "photos/Jirah31/DSC01035.webp",
+      "jirah31-09": "photos/Jirah31/DSC01045.webp",
+      "jirah31-10": "photos/Jirah31/DSC01048.webp",
+      "jirah31-11": "photos/Jirah31/DSC01051.webp",
+      "jirah31-12": "photos/Jirah31/DSC01084-Enhanced-NR.webp",
+      "jirah31-13": "photos/Jirah31/DSC01086-Enhanced-NR.webp",
+      "jirah31-14": "photos/Jirah31/DSC01095-Enhanced-NR.webp",
     };
     // @@PHOTOS_END
 
-    // @@VIDEOS_START
+                            // @@VIDEOS_START
     const VIDEOS = [
       { key:"video-01", title:"Go-karting at Newcastle Kart Club", duration:"0:13", src:"videos/Karting.mp4" },
     ];
     // @@VIDEOS_END
 
-    // @@SERIES_START
+                            // @@SERIES_START
     const SERIES = [
-      { id:1, slug:"civic-rooftop", title:"Honda Civic Rooftop", location:"Newcastle, NSW", year:2025, count:6, h:190 },
-      { id:2, slug:"daikoku", title:"Daikoku Parking Area", location:"Japan", year:2023, count:13, h:190 },
-      { id:3, slug:"nikko-circuit", title:"Nikko Circuit", location:"Japan", year:2026, count:13, h:265 },
+      { id:1, slug:"nikko-circuit", title:"Nikko Circuit", location:"Japan", year:2026, count:13, h:265 },
+      { id:2, slug:"daikoku", title:"Daikoku Parking Area", location:"Japan", year:2023, count:13, h:265 },
+      { id:3, slug:"civic-rooftop", title:"Honda Civic Rooftop", location:"Newcastle, NSW", year:2025, count:6, h:265 },
+      { id:4, slug:"kouk14", title:"Kouk14", location:"Sydney, NSW", year:2024, count:25, h:265 },
+      { id:5, slug:"jirah31", title:"Jirah's R31", location:"Newcastle, NSW", year:2025, count:14, h:265 },
     ];
     // @@SERIES_END
 
