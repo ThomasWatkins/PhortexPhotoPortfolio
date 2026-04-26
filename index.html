@@ -6,13 +6,6 @@
   <title>Phortex Photo Media</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="photos/nikko%20circuit/nikko1.webp" fetchpriority="high" type="image/webp">
-  <template id="__bundler_thumbnail">
-    <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
-      <rect width="120" height="80" fill="#070708"/>
-      <rect x="12" y="12" width="96" height="56" fill="#0e0c16" rx="2"/>
-      <text x="60" y="44" font-family="sans-serif" font-size="14" font-weight="bold" fill="#9333ea" text-anchor="middle" letter-spacing="2">PXM</text>
-    </svg>
-  </template>
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
@@ -468,86 +461,8 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    // ─── TWEAKS PANEL (inlined) ───────────────────────────────────────────────
-    const __TWEAKS_STYLE = `
-      .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;background:rgba(250,249,247,.78);color:#29261b;-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border:.5px solid rgba(255,255,255,.6);border-radius:14px;box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
-      .twk-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 8px 10px 14px;cursor:move;user-select:none}
-      .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
-      .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
-      .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
-      .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden;min-height:0}
-      .twk-row{display:flex;flex-direction:column;gap:5px}
-      .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
-      .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;color:rgba(41,38,27,.72)}
-      .twk-lbl>span:first-child{font-weight:500}
-      .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
-      .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(41,38,27,.45);padding:10px 0 0}
-      .twk-sect:first-child{padding-top:0}
-      .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;border-radius:999px;background:rgba(0,0,0,.12);outline:none}
-      .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
-      .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
-      .twk-toggle[data-on="1"]{background:#34c759}
-      .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
-      .twk-toggle[data-on="1"] i{transform:translateX(14px)}
-      .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;background:transparent;flex-shrink:0}
-      .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
-      .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
-      .twk-row{display:flex;flex-direction:column;gap:5px}
-    `;
-
-    function useTweaks(defaults) {
-      const [values, setValues] = React.useState(defaults);
-      const setTweak = React.useCallback((key, val) => {
-        setValues(prev => ({ ...prev, [key]: val }));
-        window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ [key]: val } }, '*');
-      }, []);
-      return [values, setTweak];
-    }
-
-    function TweaksPanel({ title='Tweaks', children }) {
-      const [open, setOpen] = React.useState(false);
-      const dragRef = React.useRef(null);
-      const offsetRef = React.useRef({ x:16, y:16 });
-      const clamp = React.useCallback(() => {
-        const p = dragRef.current; if (!p) return;
-        const maxR = Math.max(16, window.innerWidth - p.offsetWidth - 16);
-        const maxB = Math.max(16, window.innerHeight - p.offsetHeight - 16);
-        offsetRef.current = { x: Math.min(maxR, Math.max(16, offsetRef.current.x)), y: Math.min(maxB, Math.max(16, offsetRef.current.y)) };
-        p.style.right = offsetRef.current.x + 'px'; p.style.bottom = offsetRef.current.y + 'px';
-      }, []);
-      React.useEffect(() => {
-        const h = e => { const t = e?.data?.type; if (t==='__activate_edit_mode') setOpen(true); else if (t==='__deactivate_edit_mode') setOpen(false); };
-        window.addEventListener('message', h);
-        window.parent.postMessage({ type:'__edit_mode_available' }, '*');
-        return () => window.removeEventListener('message', h);
-      }, []);
-      const dismiss = () => { setOpen(false); window.parent.postMessage({ type:'__edit_mode_dismissed' }, '*'); };
-      const onDrag = e => {
-        const p = dragRef.current; if (!p) return;
-        const r = p.getBoundingClientRect(), sx = e.clientX, sy = e.clientY;
-        const sr = window.innerWidth - r.right, sb = window.innerHeight - r.bottom;
-        const mv = ev => { offsetRef.current = { x: sr-(ev.clientX-sx), y: sb-(ev.clientY-sy) }; clamp(); };
-        const up = () => { window.removeEventListener('mousemove',mv); window.removeEventListener('mouseup',up); };
-        window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
-      };
-      if (!open) return null;
-      return (<><style>{__TWEAKS_STYLE}</style><div ref={dragRef} className="twk-panel" style={{right:offsetRef.current.x,bottom:offsetRef.current.y}}><div className="twk-hd" onMouseDown={onDrag}><b>{title}</b><button className="twk-x" onMouseDown={e=>e.stopPropagation()} onClick={dismiss}>✕</button></div><div className="twk-body">{children}</div></div></>);
-    }
-
-    function TweakSection({ label }) { return <div className="twk-sect">{label}</div>; }
-    function TweakSlider({ label, value, min=0, max=100, step=1, unit='', onChange }) {
-      return (<div className="twk-row"><div className="twk-lbl"><span>{label}</span><span className="twk-val">{value}{unit}</span></div><input type="range" className="twk-slider" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))}/></div>);
-    }
-    function TweakToggle({ label, value, onChange }) {
-      return (<div className="twk-row twk-row-h"><div className="twk-lbl"><span>{label}</span></div><button type="button" className="twk-toggle" data-on={value?'1':'0'} onClick={()=>onChange(!value)}><i/></button></div>);
-    }
-    function TweakColor({ label, value, onChange }) {
-      return (<div className="twk-row twk-row-h"><div className="twk-lbl"><span>{label}</span></div><input type="color" className="twk-swatch" value={value} onChange={e=>onChange(e.target.value)}/></div>);
-    }
-    // ─────────────────────────────────────────────────────────────────────────
     const { useState, useEffect, useRef, useCallback } = React;
 
-                            // @@PHOTOS_START
     const PHOTOS = {
       // Hero
       "hero": "photos/nikko%20circuit/nikko1.webp",
@@ -650,15 +565,11 @@
       "jirah31-13": "photos/Jirah31/DSC01086-Enhanced-NR.webp",
       "jirah31-14": "photos/Jirah31/DSC01095-Enhanced-NR.webp",
     };
-    // @@PHOTOS_END
 
-                            // @@VIDEOS_START
     const VIDEOS = [
       { key:"video-01", title:"Go-karting at Newcastle Kart Club", duration:"0:13", src:"videos/Karting.mp4" },
     ];
-    // @@VIDEOS_END
 
-                            // @@SERIES_START
     const SERIES = [
       { id:1, slug:"nikko-circuit", title:"Nikko Circuit", location:"Japan", year:2026, count:13, h:265 },
       { id:2, slug:"daikoku", title:"Daikoku Parking Area", location:"Japan", year:2023, count:13, h:265 },
@@ -666,7 +577,6 @@
       { id:4, slug:"kouk14", title:"Kouk14", location:"Sydney, NSW", year:2024, count:25, h:265 },
       { id:5, slug:"jirah31", title:"Jirah's R31", location:"Newcastle, NSW", year:2025, count:14, h:265 },
     ];
-    // @@SERIES_END
 
     const TICKER_WORDS = ['Studio','Editorial','Dark','Speed','Automotive','Cinematic','Motion','Detail','Precision','Track','Studio','Editorial','Dark','Speed','Motion','Drift','Editorial','Precision'];
 
@@ -757,7 +667,7 @@
     }
 
     // ── Nav ──────────────────────────────────────────────────────
-    function Nav({ onNav }) {
+    function Nav() {
       const [scrolled, setScrolled] = useState(false);
       const [menuOpen, setMenuOpen] = useState(false);
       useEffect(() => {
@@ -767,7 +677,7 @@
       }, []);
       const links = [['Work','#work'],['Series','#series'],['About','#about'],['Contact','#contact']];
       return (
-        <nav className={`nav${scrolled?' scrolled':''}`} data-screen-label="Nav">
+        <nav className={`nav${scrolled?' scrolled':''}`}>
           <div className="nav-logo">Phortex <span className="nav-logo-dim">Photo Media</span></div>
           <div className="nav-links">
             {links.map(([l,h]) => (
@@ -794,7 +704,7 @@
     function Hero() {
       const ticker = [...TICKER_WORDS, ...TICKER_WORDS];
       return (
-        <section className="hero" data-screen-label="01 Hero" id="work">
+        <section className="hero" id="work">
           <div className="hero-bg"><PhotoSlot slotKey="hero" eager /></div>
           <div className="hero-overlay"></div>
           <div className="hero-crumb">Automotive<span>·</span>Motorsport<span>·</span>Editorial</div>
@@ -823,7 +733,7 @@
     // ── Featured Grid ─────────────────────────────────────────────
     function FeaturedSection() {
       return (
-        <div id="featured" data-screen-label="02 Featured Work">
+        <div id="featured">
           <div className="s-hd">
             <div className="s-label">Featured Work</div>
             <div className="s-rule"></div>
@@ -929,7 +839,7 @@
 
     function VideoSection() {
       return (
-        <div data-screen-label="03 Video Showcase">
+        <div>
           <div className="s-hd">
             <div className="s-label">Video</div>
             <div className="s-rule"></div>
@@ -945,11 +855,11 @@
     // ── Collections Grid ──────────────────────────────────────────
     function CollectionsSection({ onOpen }) {
       return (
-        <section id="series" data-screen-label="04 Collections">
+        <section id="series">
           <div className="s-hd">
             <div className="s-label">Series &amp; Collections</div>
             <div className="s-rule"></div>
-            <div className="s-sup">08 collections</div>
+            <div className="s-sup">05 collections</div>
           </div>
           <div className="coll-grid">
             {SERIES.map(s => (
@@ -970,7 +880,7 @@
     // ── About ─────────────────────────────────────────────────────
     function AboutSection() {
       return (
-        <section className="about-sec" id="about" data-screen-label="05 About">
+        <section className="about-sec" id="about">
           <div>
             <div className="about-eyebrow">About the photographer</div>
             <div className="about-heading">Behind the lens</div>
@@ -996,7 +906,7 @@
     function CollModal({ series, onClose, onOpenLightbox }) {
       const slots = series ? seriesSlots(series) : [];
       return (
-        <div className={`coll-modal${series?' open':''}`} data-screen-label="Collection Modal">
+        <div className={`coll-modal${series?' open':''}`}>
           {series && (
             <>
               <div className="cm-hd">
@@ -1039,7 +949,7 @@
       const src = slotKey ? (PHOTOS[slotKey] || "") : "";
 
       return (
-        <div className={`lb${open?' open':''}`} data-screen-label="Lightbox">
+        <div className={`lb${open?' open':''}`}>
           <div className="lb-ui-top">
             <div className="lb-counter">
               <em>{open ? index+1 : 0}</em> / {photos.length}
@@ -1064,24 +974,9 @@
 
     // ── App ───────────────────────────────────────────────────────
     function App() {
-      const [tweaks, setTweak] = useTweaks({
-        "accentColor": "#9333ea",
-        "cursorSize": 11,
-      });
       const [activeSeries, setActiveSeries] = useState(null);
       const [lbPhotos, setLbPhotos]   = useState([]);
       const [lbIndex, setLbIndex]     = useState(null);
-
-      useEffect(() => {
-        document.documentElement.style.setProperty('--accent', tweaks.accentColor);
-        const bright = tweaks.accentColor;
-        document.documentElement.style.setProperty('--accent-bright', bright);
-        window.__accentHex = tweaks.accentColor;
-        const dot  = document.getElementById('cursor-dot');
-        const ring = document.getElementById('cursor-ring');
-        if (dot)  { dot.style.width  = tweaks.cursorSize+'px'; dot.style.height = tweaks.cursorSize+'px'; }
-        if (ring) { ring.style.width = (tweaks.cursorSize*3.4)+'px'; ring.style.height = (tweaks.cursorSize*3.4)+'px'; }
-      }, [tweaks.accentColor, tweaks.cursorSize]);
 
       const openLightbox = (photos, idx) => { setLbPhotos(photos); setLbIndex(idx); };
       const closeLightbox = () => setLbIndex(null);
@@ -1096,7 +991,7 @@
           <VideoSection />
           <CollectionsSection onOpen={setActiveSeries} />
           <AboutSection />
-          <footer className="footer" id="contact" data-screen-label="Footer">
+          <footer className="footer" id="contact">
             <div className="footer-logo">Phortex Photo Media © 2025</div>
             <div className="footer-links">
               <a href="#" className="footer-link">Instagram</a>
@@ -1117,13 +1012,6 @@
             onPrev={prevPhoto}
             onNext={nextPhoto}
           />
-
-          <TweaksPanel>
-            <TweakSection label="Accent Color" />
-            <TweakColor label="Color" value={tweaks.accentColor} onChange={v => setTweak('accentColor',v)} />
-            <TweakSection label="Cursor Size" />
-            <TweakSlider label="Size" value={tweaks.cursorSize} min={6} max={22} step={1} unit="px" onChange={v => setTweak('cursorSize',v)} />
-          </TweaksPanel>
         </>
       );
     }
