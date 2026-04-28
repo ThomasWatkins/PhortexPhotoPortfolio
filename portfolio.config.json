@@ -1,7 +1,7 @@
 {
   "_instructions": {
     "hero": "folder/filename (no extension) — which photo fills the full-screen hero",
-    "featured": "exactly 5 folder/filename refs — the homepage mosaic, left-to-right",
+    "featured": "exactly 5 refs — the homepage mosaic, left-to-right. Photos: folder/filename (no extension). Videos: videos/filename.mp4 — autoplays silently in the grid.",
     "aboutPortrait": "folder/filename — portrait shown in the About section",
     "series": {
       "_note": "One entry per folder in photos/. Key must match the folder name exactly.",
@@ -26,9 +26,9 @@
   "hero": "nikko circuit/nikko1",
 
   "featured": [
-    "nikko circuit/nikko2",
+    "videos/JacarandaShoot.mp4",
     "Daikoku/daikoku1",
-    "nikko circuit/nikko3",
+    "PeachesTokyo/Peaches1",
     "Daikoku/daikoku2",
     "nikko circuit/nikko4"
   ],
@@ -70,7 +70,14 @@
         "year": 2025,
         "cover": "cover",
         "cardHeight": 265
-      }
+    },
+      "PeachesTokyo": {
+        "title": "Peaches Tokyo",
+        "location": "Tokyo, Japan",
+        "year": 2025,
+        "cover": "Peaches1",
+        "cardHeight": 265
+    }
   },
 
   "videos": [

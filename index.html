@@ -25,10 +25,6 @@
     }
     html { scroll-behavior: smooth; }
     body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; }
-    body::after {
-      content:''; position:fixed; inset:0; pointer-events:none; z-index:9000;
-      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.035) 3px, rgba(0,0,0,0.035) 4px);
-    }
 
     /* ── Cursor ── */
     #cursor-dot {
@@ -142,18 +138,17 @@
     .s-sup { font-family:var(--mono); font-size:9px; letter-spacing:0.12em; color:var(--accent); opacity:0.45; white-space:nowrap; }
 
     /* ── Featured Mosaic ── */
-    .feat-grid {
-      padding:0 52px;
-      display:grid;
-      grid-template-columns:1.5fr 1fr 1fr;
-      grid-template-rows:285px 285px;
-      gap:5px;
+    .feat-grid { padding:0 52px; columns:3; gap:5px; }
+    .fg {
+      break-inside:avoid; margin-bottom:5px; position:relative; overflow:hidden;
+      border:1px solid transparent;
+      transition:border-color .3s, transform .4s cubic-bezier(0.16,1,0.3,1);
     }
-    .fg { position:relative; overflow:hidden; }
-    .fg.tall { grid-row:span 2; }
-    .fg.wide { grid-column:span 2; }
-    .fg .photo-slot { transition:filter .4s, transform .5s cubic-bezier(0.16,1,0.3,1); transform-origin:center; }
-    .fg:hover .photo-slot { filter:brightness(1.08); transform:scale(1.03); }
+    .fg:hover { border-color:rgba(147,51,234,0.3); transform:translateY(-3px); }
+    .fg .photo-slot { transition:filter .3s; }
+    .fg:hover .photo-slot { filter:brightness(0.88); }
+    .fg video { display:block; width:100%; height:auto; aspect-ratio:16/9; transition:filter .3s; }
+    .fg:hover video { filter:brightness(0.88); }
 
     /* ── Video Showcase ── */
     .video-grid { padding:0 52px; display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
@@ -376,7 +371,7 @@
       .hero-crumb { left: 32px; }
       .hero-content { padding: 0 32px 68px; }
       .s-hd { padding: 60px 32px 28px; }
-      .feat-grid { padding: 0 32px; grid-template-rows: 220px 220px; }
+      .feat-grid { padding: 0 32px; columns: 2; }
       .video-grid { padding: 0 32px; grid-template-columns: repeat(2, 1fr); }
       .v-slot { height: 340px; }
       .coll-grid { padding: 0 32px; columns: 3; }
@@ -398,14 +393,7 @@
 
       .s-hd { padding: 48px 20px 20px; gap: 12px; }
 
-      .feat-grid {
-        padding: 0 16px;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 200px 200px 200px;
-        gap: 5px;
-      }
-      .fg.tall { grid-row: span 1; }
-      .fg.wide { grid-column: span 2; }
+      .feat-grid { padding: 0 16px; columns: 2; }
 
       .video-grid { padding: 0 16px; grid-template-columns: 1fr; }
       .v-slot { height: 260px; }
@@ -442,12 +430,7 @@
 
     /* ── Small Mobile (≤ 480px) ── */
     @media (max-width: 480px) {
-      .feat-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: repeat(5, 210px);
-      }
-      .fg.tall { grid-row: span 1; }
-      .fg.wide { grid-column: span 1; }
+      .feat-grid { columns: 1; }
 
       .coll-grid { columns: 1; }
       .c-card { height: 220px !important; }
@@ -577,6 +560,16 @@
       { id:4, slug:"kouk14", title:"Kouk14", location:"Sydney, NSW", year:2024, count:25, h:265 },
       { id:5, slug:"jirah31", title:"Jirah's R31", location:"Newcastle, NSW", year:2025, count:14, h:265 },
     ];
+
+                    // @@FEATURED_START
+    const FEATURED = [
+      { type:"video", src:"videos/JacarandaShoot.mp4" },
+      { type:"photo", key:"feat-02" },
+      { type:"photo", key:"feat-03" },
+      { type:"photo", key:"feat-04" },
+      { type:"photo", key:"feat-05" },
+    ];
+    // @@FEATURED_END
 
     const TICKER_WORDS = ['Studio','Editorial','Dark','Speed','Automotive','Cinematic','Motion','Detail','Precision','Track','Studio','Editorial','Dark','Speed','Motion','Drift','Editorial','Precision'];
 
@@ -740,11 +733,13 @@
             <div className="s-sup">General</div>
           </div>
           <div className="feat-grid">
-            <div className="fg tall"><PhotoSlot slotKey="feat-01" /></div>
-            <div className="fg"><PhotoSlot slotKey="feat-02" /></div>
-            <div className="fg"><PhotoSlot slotKey="feat-03" /></div>
-            <div className="fg wide"><PhotoSlot slotKey="feat-04" /></div>
-            <div className="fg"><PhotoSlot slotKey="feat-05" /></div>
+            {FEATURED.map((item, i) => (
+              <div key={i} className="fg">
+                {item.type === "video"
+                  ? <video src={item.src} autoPlay muted loop playsInline />
+                  : <PhotoSlot slotKey={item.key} natural />}
+              </div>
+            ))}
           </div>
         </div>
       );

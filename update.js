@@ -7,7 +7,8 @@ const CFG        = JSON.parse(fs.readFileSync(path.join(ROOT, 'portfolio.config.
 const HTML_PATH  = path.join(ROOT, 'index.html');
 const PHOTOS_DIR = path.join(ROOT, 'photos');
 
-const SRC_EXTS = ['.jpg', '.jpeg', '.png', '.tiff', '.tif', '.heic', '.avif'];
+const SRC_EXTS   = ['.jpg', '.jpeg', '.png', '.tiff', '.tif', '.heic', '.avif'];
+const VIDEO_EXTS  = ['.mp4', '.webm', '.mov', '.ogg'];
 
 // Folder name as it actually exists on disk (case-insensitive lookup for Windows).
 function resolveFolder(configKey) {
@@ -21,19 +22,6 @@ function toSlug(name) {
 
 function photoUrl(folder, basename) {
   return `photos/${folder.replace(/ /g, '%20')}/${basename}.webp`;
-}
-
-function tryDelete(filePath) {
-  try {
-    fs.chmodSync(filePath, 0o666);
-    fs.unlinkSync(filePath);
-  } catch (e) {
-    if (e.code === 'EPERM' || e.code === 'EACCES') {
-      console.log(`    warning: could not delete ${path.basename(filePath)} — delete it manually`);
-    } else {
-      throw e;
-    }
-  }
 }
 
 function fmtMB(bytes) {
@@ -58,10 +46,7 @@ async function convertImages() {
       const base      = path.basename(file, ext);
       const outPath   = path.join(dir, base + '.webp');
 
-      if (fs.existsSync(outPath)) {
-        tryDelete(inputPath);
-        continue;
-      }
+      if (fs.existsSync(outPath)) continue;
 
       const inSize = fs.statSync(inputPath).size;
       await sharp(inputPath).webp({ quality: 85 }).toFile(outPath);
@@ -71,7 +56,6 @@ async function convertImages() {
       const tag = `${folder}\\${file}`;
       console.log(`    converted: ${tag.padEnd(40)} → .webp  ${fmtMB(inSize).padStart(8)} → ${fmtMB(outSize).padStart(7)}  (${pct}%)`);
       converted++;
-      tryDelete(inputPath);
     }
   }
 
@@ -86,8 +70,9 @@ function buildPhotos() {
   const [hf, hb] = CFG.hero.split('/');
   photos['hero'] = photoUrl(resolveFolder(hf), hb);
 
-  // Featured mosaic
+  // Featured mosaic (skip video entries)
   CFG.featured.forEach((ref, i) => {
+    if (VIDEO_EXTS.includes(path.extname(ref).toLowerCase())) return;
     const [ff, fb] = ref.split('/');
     photos[`feat-${String(i + 1).padStart(2, '0')}`] = photoUrl(resolveFolder(ff), fb);
   });
@@ -116,7 +101,17 @@ function buildPhotos() {
   return photos;
 }
 
-// ── 3. Build VIDEOS array ────────────────────────────────────────────────────
+// ── 3. Build FEATURED array ──────────────────────────────────────────────────
+function buildFeatured() {
+  return CFG.featured.map((ref, i) => {
+    if (VIDEO_EXTS.includes(path.extname(ref).toLowerCase())) {
+      return { type: 'video', src: ref };
+    }
+    return { type: 'photo', key: `feat-${String(i + 1).padStart(2, '0')}` };
+  });
+}
+
+// ── 4. Build VIDEOS array ────────────────────────────────────────────────────
 function buildVideos() {
   return CFG.videos.map((v, i) => ({
     key:      `video-${String(i + 1).padStart(2, '0')}`,
@@ -126,7 +121,7 @@ function buildVideos() {
   }));
 }
 
-// ── 4. Build SERIES array ────────────────────────────────────────────────────
+// ── 5. Build SERIES array ────────────────────────────────────────────────────
 function buildSeries() {
   return Object.entries(CFG.series).map(([cfgKey, meta], i) => {
     const folder = resolveFolder(cfgKey);
@@ -146,8 +141,8 @@ function buildSeries() {
   });
 }
 
-// ── 5. Inject into index.html ────────────────────────────────────────────────
-function updateHtml(photos, videos, series) {
+// ── 6. Inject into index.html ────────────────────────────────────────────────
+function updateHtml(photos, videos, series, featured) {
   let html = fs.readFileSync(HTML_PATH, 'utf8');
 
   // Build grouped PHOTOS block with section comments
@@ -159,11 +154,11 @@ function updateHtml(photos, videos, series) {
   photoLines.push(`      "hero": "${photos['hero']}",`);
   photoLines.push('');
 
-  // Featured
+  // Featured (photo entries only — video slots have no PHOTOS entry)
   photoLines.push('      // Featured work mosaic');
   for (let i = 1; i <= CFG.featured.length; i++) {
     const k = `feat-${String(i).padStart(2, '0')}`;
-    photoLines.push(`      "${k}": "${photos[k]}",`);
+    if (photos[k]) photoLines.push(`      "${k}": "${photos[k]}",`);
   }
   photoLines.push('');
 
@@ -224,6 +219,18 @@ function updateHtml(photos, videos, series) {
 
   html = html.replace(/\/\/ @@SERIES_START[\s\S]*?\/\/ @@SERIES_END/, seriesBlock);
 
+  // FEATURED
+  const featuredLines = featured.map(item =>
+    item.type === 'video'
+      ? `      { type:"video", src:"${item.src}" },`
+      : `      { type:"photo", key:"${item.key}" },`
+  );
+  const featuredBlock =
+    `    // @@FEATURED_START\n` +
+    `    const FEATURED = [\n${featuredLines.join('\n')}\n    ];\n` +
+    `    // @@FEATURED_END`;
+  html = html.replace(/\/\/ @@FEATURED_START[\s\S]*?\/\/ @@FEATURED_END/, featuredBlock);
+
   // Update the hero preload link in <head>
   html = html.replace(
     /(<link rel="preload" as="image" href=")[^"]*(")/,
@@ -239,13 +246,14 @@ async function main() {
   await convertImages();
 
   console.log('\nStep 2 — Scanning series folders...');
-  const photos = buildPhotos();
-  const videos = buildVideos();
-  const series = buildSeries();
+  const photos   = buildPhotos();
+  const videos   = buildVideos();
+  const series   = buildSeries();
+  const featured = buildFeatured();
   series.forEach(s => console.log(`    ${s.title}: ${s.count} photos`));
 
   console.log('\nStep 3 — Updating HTML...');
-  updateHtml(photos, videos, series);
+  updateHtml(photos, videos, series, featured);
 
   console.log('\nDone. Refresh index.html in your browser.\n');
 }
