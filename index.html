@@ -446,14 +446,14 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
 
+        // @@PHOTOS_START
     const PHOTOS = {
       // Hero
       "hero": "photos/nikko%20circuit/nikko1.webp",
 
       // Featured work mosaic
-      "feat-01": "photos/nikko%20circuit/nikko2.webp",
       "feat-02": "photos/Daikoku/daikoku1.webp",
-      "feat-03": "photos/nikko%20circuit/nikko3.webp",
+      "feat-03": "photos/PeachesTokyo/Peaches1.webp",
       "feat-04": "photos/Daikoku/daikoku2.webp",
       "feat-05": "photos/nikko%20circuit/nikko4.webp",
 
@@ -463,6 +463,7 @@
       "cover-civic-rooftop": "photos/Civic%20Rooftop/civic2.webp",
       "cover-kouk14": "photos/kouk14/kouk14.webp",
       "cover-jirah31": "photos/Jirah31/cover.webp",
+      "cover-peachestokyo": "photos/PeachesTokyo/Peaches1.webp",
 
       // About portrait
       "about-portrait": "photos/Daikoku/daikoku13.webp",
@@ -547,21 +548,38 @@
       "jirah31-12": "photos/Jirah31/DSC01084-Enhanced-NR.webp",
       "jirah31-13": "photos/Jirah31/DSC01086-Enhanced-NR.webp",
       "jirah31-14": "photos/Jirah31/DSC01095-Enhanced-NR.webp",
-    };
 
+      // Peaches Tokyo — 9 photos
+      "peachestokyo-01": "photos/PeachesTokyo/DSC02756.webp",
+      "peachestokyo-02": "photos/PeachesTokyo/DSC02763.webp",
+      "peachestokyo-03": "photos/PeachesTokyo/DSC02765.webp",
+      "peachestokyo-04": "photos/PeachesTokyo/DSC02890.webp",
+      "peachestokyo-05": "photos/PeachesTokyo/DSC02894.webp",
+      "peachestokyo-06": "photos/PeachesTokyo/DSC02901.webp",
+      "peachestokyo-07": "photos/PeachesTokyo/DSC02904.webp",
+      "peachestokyo-08": "photos/PeachesTokyo/DSC02939.webp",
+      "peachestokyo-09": "photos/PeachesTokyo/Peaches1.webp",
+    };
+    // @@PHOTOS_END
+
+        // @@VIDEOS_START
     const VIDEOS = [
       { key:"video-01", title:"Go-karting at Newcastle Kart Club", duration:"0:13", src:"videos/Karting.mp4" },
     ];
+    // @@VIDEOS_END
 
+        // @@SERIES_START
     const SERIES = [
       { id:1, slug:"nikko-circuit", title:"Nikko Circuit", location:"Japan", year:2026, count:13, h:265 },
       { id:2, slug:"daikoku", title:"Daikoku Parking Area", location:"Japan", year:2023, count:13, h:265 },
       { id:3, slug:"civic-rooftop", title:"Honda Civic Rooftop", location:"Newcastle, NSW", year:2025, count:6, h:265 },
       { id:4, slug:"kouk14", title:"Kouk14", location:"Sydney, NSW", year:2024, count:25, h:265 },
       { id:5, slug:"jirah31", title:"Jirah's R31", location:"Newcastle, NSW", year:2025, count:14, h:265 },
+      { id:6, slug:"peachestokyo", title:"Peaches Tokyo", location:"Tokyo, Japan", year:2025, count:9, h:265 },
     ];
+    // @@SERIES_END
 
-                    // @@FEATURED_START
+        // @@FEATURED_START
     const FEATURED = [
       { type:"video", src:"videos/JacarandaShoot.mp4" },
       { type:"photo", key:"feat-02" },
