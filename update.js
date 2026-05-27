@@ -49,7 +49,10 @@ async function convertImages() {
       if (fs.existsSync(outPath)) continue;
 
       const inSize = fs.statSync(inputPath).size;
-      await sharp(inputPath).webp({ quality: 85 }).toFile(outPath);
+      await sharp(inputPath)
+        .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 85 })
+        .toFile(outPath);
       const outSize = fs.statSync(outPath).size;
 
       const pct = Math.round((outSize - inSize) / inSize * 100);
@@ -60,6 +63,48 @@ async function convertImages() {
   }
 
   console.log(`    ${converted} image(s) converted.`);
+}
+
+// ── 1b. Resize oversized existing webps ─────────────────────────────────────
+async function resizeExistingWebps() {
+  const MAX = 1920;
+  const folders = fs.readdirSync(PHOTOS_DIR)
+    .filter(f => fs.statSync(path.join(PHOTOS_DIR, f)).isDirectory());
+
+  let resized = 0;
+
+  for (const folder of folders) {
+    const dir = path.join(PHOTOS_DIR, folder);
+    for (const file of fs.readdirSync(dir)) {
+      if (path.extname(file).toLowerCase() !== '.webp') continue;
+
+      const fullPath = path.join(dir, file);
+      const meta = await sharp(fullPath).metadata();
+      if (Math.max(meta.width || 0, meta.height || 0) <= MAX) continue;
+
+      const inSize = fs.statSync(fullPath).size;
+      let buf;
+      try {
+        // Read into buffer first so sharp never holds an open file handle on the source
+        const inputBuf = fs.readFileSync(fullPath);
+        buf = await sharp(inputBuf)
+          .resize({ width: MAX, height: MAX, fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 85 })
+          .toBuffer();
+        fs.writeFileSync(fullPath, buf);
+      } catch (e) {
+        console.log(`    skipped (${e.code}): ${folder}/${file}`);
+        continue;
+      }
+      const outSize = buf.length;
+
+      const pct = Math.round((outSize - inSize) / inSize * 100);
+      console.log(`    resized: ${folder}/${file}  ${fmtMB(inSize)} → ${fmtMB(outSize)}  (${pct >= 0 ? '+' : ''}${pct}%)`);
+      resized++;
+    }
+  }
+
+  console.log(`    ${resized} image(s) resized.`);
 }
 
 // ── 2. Build PHOTOS map ──────────────────────────────────────────────────────
@@ -244,6 +289,9 @@ function updateHtml(photos, videos, series, featured) {
 async function main() {
   console.log('\nStep 1 — Converting new images to WebP...');
   await convertImages();
+
+  console.log('\nStep 1b — Resizing oversized WebP files...');
+  await resizeExistingWebps();
 
   console.log('\nStep 2 — Scanning series folders...');
   const photos   = buildPhotos();

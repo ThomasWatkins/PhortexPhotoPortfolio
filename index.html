@@ -4,10 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phortex Photo Media</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com">
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="photos/nikko%20circuit/nikko1.webp" fetchpriority="high" type="image/webp">
-  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
   <style>
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; cursor:none !important; }
@@ -446,7 +448,7 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
 
-        // @@PHOTOS_START
+                // @@PHOTOS_START
     const PHOTOS = {
       // Hero
       "hero": "photos/nikko%20circuit/nikko1.webp",
@@ -562,13 +564,13 @@
     };
     // @@PHOTOS_END
 
-        // @@VIDEOS_START
+                // @@VIDEOS_START
     const VIDEOS = [
       { key:"video-01", title:"Go-karting at Newcastle Kart Club", duration:"0:13", src:"videos/Karting.mp4" },
     ];
     // @@VIDEOS_END
 
-        // @@SERIES_START
+                // @@SERIES_START
     const SERIES = [
       { id:1, slug:"nikko-circuit", title:"Nikko Circuit", location:"Japan", year:2026, count:13, h:265 },
       { id:2, slug:"daikoku", title:"Daikoku Parking Area", location:"Japan", year:2023, count:13, h:265 },
@@ -579,7 +581,7 @@
     ];
     // @@SERIES_END
 
-        // @@FEATURED_START
+                // @@FEATURED_START
     const FEATURED = [
       { type:"video", src:"videos/JacarandaShoot.mp4" },
       { type:"photo", key:"feat-02" },
@@ -1053,12 +1055,14 @@
     const cv   = document.getElementById('trail-canvas');
     const ctx  = cv.getContext('2d');
     let mx=-200, my=-200, rx=-200, ry=-200, particles=[];
-    window.__accentHex = '#9333ea';
 
     function hexToRgb(h) {
       const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
       return `${r},${g},${b}`;
     }
+
+    // Cache once — never changes at runtime
+    const accentRgb = hexToRgb('#9333ea');
 
     function resize() { cv.width=window.innerWidth; cv.height=window.innerHeight; }
     resize(); window.addEventListener('resize', resize);
@@ -1066,10 +1070,16 @@
     dot.style.width='11px'; dot.style.height='11px';
     ring.style.width='38px'; ring.style.height='38px';
 
+    // Throttle particle creation to ~60fps to avoid flooding on high-refresh displays
+    let lastParticleMs = 0;
     document.addEventListener('mousemove', e => {
       mx=e.clientX; my=e.clientY;
       dot.style.left=mx+'px'; dot.style.top=my+'px';
-      for(let i=0;i<2;i++) particles.push({ x:mx+(Math.random()-.5)*6, y:my+(Math.random()-.5)*6, r:Math.random()*3+1.5, life:1 });
+      const now = performance.now();
+      if (now - lastParticleMs > 16) {
+        lastParticleMs = now;
+        for(let i=0;i<2;i++) particles.push({ x:mx+(Math.random()-.5)*6, y:my+(Math.random()-.5)*6, r:Math.random()*3+1.5, life:1 });
+      }
     });
 
     document.addEventListener('mouseover', e => {
@@ -1082,13 +1092,17 @@
       ctx.clearRect(0,0,cv.width,cv.height);
       rx+=(mx-rx)*0.1; ry+=(my-ry)*0.1;
       ring.style.left=rx+'px'; ring.style.top=ry+'px';
-      const rgb = hexToRgb(window.__accentHex || '#9333ea');
-      for(let i=particles.length-1;i>=0;i--) {
-        const p=particles[i]; p.life-=0.05;
-        if(p.life<=0){particles.splice(i,1);continue;}
-        ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
-        ctx.fillStyle=`rgba(${rgb},${p.life*0.32})`;
-        ctx.shadowBlur=10; ctx.shadowColor=`rgb(${rgb})`; ctx.fill(); ctx.shadowBlur=0;
+      // Set shadowBlur once per frame, not once per particle — avoids GPU state flush on every draw
+      if (particles.length) {
+        ctx.shadowBlur=10; ctx.shadowColor=`rgb(${accentRgb})`;
+        for(let i=particles.length-1;i>=0;i--) {
+          const p=particles[i]; p.life-=0.05;
+          if(p.life<=0){particles.splice(i,1);continue;}
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+          ctx.fillStyle=`rgba(${accentRgb},${p.life*0.32})`;
+          ctx.fill();
+        }
+        ctx.shadowBlur=0;
       }
       requestAnimationFrame(loop);
     }

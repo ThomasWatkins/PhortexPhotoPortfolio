@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm install *)",
-      "Bash(node update.js)"
+      "Bash(node update.js)",
+      "PowerShell(Get-ChildItem \"s:\\\\Portfolio Website\\\\Development Build\\\\photos\" -Recurse -File | ForEach-Object { [PSCustomObject]@{File=$_.Name; SizeKB=[math]::Round\\($_.Length/1KB,0\\)} } | Sort-Object SizeKB -Descending | Select-Object -First 20 | Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem \"s:\\\\Portfolio Website\\\\Development Build\\\\videos\" -File | ForEach-Object { [PSCustomObject]@{File=$_.Name; SizeMB=[math]::Round\\($_.Length/1MB,1\\)} } | Format-Table -AutoSize)"
     ]
   }
 }
