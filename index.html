@@ -143,11 +143,12 @@
       break-inside:avoid; margin-bottom:5px; position:relative; overflow:hidden;
       border:1px solid transparent;
       transition:border-color .3s, transform .4s cubic-bezier(0.16,1,0.3,1);
+      will-change: transform;
     }
     .fg:hover { border-color:rgba(147,51,234,0.3); transform:translateY(-3px); }
-    .fg .photo-slot { transition:filter .3s; }
-    .fg:hover .photo-slot { filter:brightness(0.88); }
-    .fg video { display:block; width:100%; height:auto; aspect-ratio:16/9; transition:filter .3s; }
+    .fg::after { content:''; position:absolute; inset:0; background:rgba(0,0,0,0); transition:background .3s; pointer-events:none; z-index:1; }
+    .fg:hover::after { background:rgba(0,0,0,0.12); }
+    .fg video { display:block; width:100%; height:auto; aspect-ratio:16/9; }
     .fg:hover video { filter:brightness(0.88); }
 
     /* ── Video Showcase ── */
@@ -193,12 +194,11 @@
       break-inside:avoid; margin-bottom:5px; position:relative; overflow:hidden;
       border:1px solid transparent;
       transition:border-color .3s, transform .4s cubic-bezier(0.16,1,0.3,1);
+      will-change: transform;
     }
     .c-card:hover { border-color:rgba(147,51,234,0.3); transform:translateY(-3px); }
     .c-card:hover .c-overlay { opacity:1; }
     .c-card:hover .c-arr { opacity:1; transform:translate(0,0); }
-    .c-card:hover .photo-slot { filter:brightness(0.85); }
-    .c-card .photo-slot { transition:filter .3s; }
     .c-overlay {
       position:absolute; inset:0; opacity:0; transition:opacity .35s;
       background:linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.25) 55%, transparent 100%);
@@ -597,6 +597,9 @@
       );
     }
 
+    // Keep decoded image data alive so the browser doesn't evict it when elements scroll offscreen
+    const _imgCache = {};
+
     // ── Photo Slot Component ──────────────────────────────────────
     function PhotoSlot({ slotKey, style, height, onClick, eager, natural }) {
       const src = PHOTOS[slotKey] || "";
@@ -613,13 +616,18 @@
         if (!el) return;
         const obs = new IntersectionObserver(
           ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-          { rootMargin: '400px' }
+          { rootMargin: '600px' }
         );
         obs.observe(el);
         return () => obs.disconnect();
       }, [filled, eager]);
 
-      useEffect(() => { if (visible && src) setLoading(true); }, [visible, src]);
+      useEffect(() => {
+        if (visible && src) {
+          setLoading(true);
+          if (!_imgCache[src]) { const i = new Image(); i.src = src; _imgCache[src] = i; }
+        }
+      }, [visible, src]);
 
       return (
         <div
@@ -634,7 +642,7 @@
               src={src}
               alt={slotKey}
               decoding="async"
-              loading={eager ? 'eager' : 'lazy'}
+              loading="eager"
               fetchpriority={eager ? 'high' : 'auto'}
               onLoad={() => setLoaded(true)}
             />
