@@ -762,7 +762,7 @@
             {FEATURED.map((item, i) => (
               <div key={i} className="fg">
                 {item.type === "video"
-                  ? <video src={item.src} autoPlay muted loop playsInline />
+                  ? <video src={item.src} autoPlay muted loop playsInline preload="metadata" />
                   : <PhotoSlot slotKey={item.key} natural />}
               </div>
             ))}
@@ -880,7 +880,7 @@
           <div className="s-hd">
             <div className="s-label">Series &amp; Collections</div>
             <div className="s-rule"></div>
-            <div className="s-sup">05 collections</div>
+            <div className="s-sup">{String(SERIES.length).padStart(2,'0')} collections</div>
           </div>
           <div className="coll-grid">
             {SERIES.map(s => (
@@ -925,15 +925,21 @@
 
     // ── Collection Modal ──────────────────────────────────────────
     function CollModal({ series, onClose, onOpenLightbox }) {
-      const slots = series ? seriesSlots(series) : [];
+      // Keep the last-opened series in state so PhotoSlots stay mounted (and loaded)
+      // during the CSS close transition and on re-open of the same series.
+      const [lastSeries, setLastSeries] = useState(null);
+      useEffect(() => { if (series) setLastSeries(series); }, [series]);
+
+      const active = series || lastSeries;
+      const slots = active ? seriesSlots(active) : [];
       return (
         <div className={`coll-modal${series?' open':''}`}>
-          {series && (
+          {active && (
             <>
               <div className="cm-hd">
                 <div>
-                  <div className="cm-title">{series.title}</div>
-                  <div className="cm-sub">{series.location} · {series.year} · {series.count} photos</div>
+                  <div className="cm-title">{active.title}</div>
+                  <div className="cm-sub">{active.location} · {active.year} · {active.count} photos</div>
                 </div>
                 <button className="cm-close" onClick={onClose}>← Back</button>
               </div>
